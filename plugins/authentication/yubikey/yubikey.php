@@ -18,7 +18,7 @@ defined('_JEXEC') or die;
  */
 class PlgAuthenticationYubikey extends JPlugin
 {
-    /**
+	/**
 	 * This method should handle any authentication and report back to the subject
 	 *
 	 * @param   array   $credentials  Array holding the user credentials
@@ -30,12 +30,12 @@ class PlgAuthenticationYubikey extends JPlugin
 	 * @since   1.5
 	 */
 	public function onUserAuthenticate($credentials, $options, &$response)
-    {
-        $this->loadLanguage();
-        
-        $response->type = 'YubiKey';
-        
-        // A blank password *and* username means that we have no YubiKey OTP
+	{
+		$this->loadLanguage();
+
+		$response->type = 'YubiKey';
+
+		// A blank password *and* username means that we have no YubiKey OTP
 		if (empty($credentials['password']) && empty($credentials['username']))
 		{
 			$response->status = JAuthentication::STATUS_FAILURE;
@@ -44,107 +44,125 @@ class PlgAuthenticationYubikey extends JPlugin
 			return false;
 		}
 
-        // Get the YubiKey OTP
-        $otp = null;
-        $username = null;
+		// Get the YubiKey OTP
+		$otp = null;
+		$username = null;
 
-        if (!empty($credentials['username']))
-        {
-            $otp = $credentials['username'];
-            
-            if (strlen($otp) != 44)
-            {
-                // This is not a YubiKey OTP
-                $otp = null;
-            }
-        }
-        
-        if (is_null($otp) && !empty($credentials['password']))
-        {
-            $otp = $credentials['password'];
-            
-            if (strlen($otp) != 44)
-            {
-                // This is not a YubiKey OTP
-                $otp = null;
-            }
-            elseif (!empty($credentials['username']))
-            {
-                $username = $credentials['username'];
-            }
-        }
-        
-        // If no YubiKey signature was found call it quits
-        if (is_null($otp))
-        {
-            $response->status = JAuthentication::STATUS_FAILURE;
+		if (!empty($credentials['username']))
+		{
+			$otp = $credentials['username'];
+
+			if (strlen($otp) != 44)
+			{
+				// This is not a YubiKey OTP
+				$otp = null;
+			}
+		}
+
+		if (is_null($otp) && !empty($credentials['password']))
+		{
+			$otp = $credentials['password'];
+
+			if (strlen($otp) != 44)
+			{
+				// This is not a YubiKey OTP
+				$otp = null;
+			}
+			elseif (!empty($credentials['username']))
+			{
+				$username = $credentials['username'];
+			}
+		}
+
+		// If no YubiKey signature was found call it quits
+		if (is_null($otp))
+		{
+			$response->status = JAuthentication::STATUS_FAILURE;
 			$response->error_message = JText::_('PLG_AUTHENTICATION_YUBIKEY_ERR_NOYUBIKEYOTP');
 
 			return false;
-        }
-        
-        // Extract the YubiKey signature
-        $signature = substr($otp, 0, -32);
-        
-        if (!is_null($username))
-        {
-            // First check if this is the master key's signature
-            $master_signature = $this->params->get('masterkey', '');
-            
-            if (!empty($master_signature))
-            {
-                $master_signature = substr($master_signature, 0, -32);
-            }
-            
-            if ($master_signature != $signature)
-            {
-                // @todo This is not the master signature, check if the username matches the signature
-            }
-        }
-        else
-        {
-            // @todo Find the username from the signature
-        }
-        
-        // Load the user from the database
-        if (!class_exists('JUserHelper', true))
-        {
-            jimport('joomla.user.helper');
-        }
-        
-        $user_id = JUserHelper::getUserId($username);
-        $user = JFactory::getUser($user_id);
-        
-        // Check the YubiKey OTP for validity
-        $validOTP = $this->validateYubikeyOTP($otp);
-        
-        if ($validOTP)
-        {
-            $response->email = $user->email;
-            $response->fullname = $user->name;
-            
-            if (JFactory::getApplication()->isAdmin())
-            {
-                $response->language = $user->getParam('admin_language');
-            }
-            else
-            {
-                $response->language = $user->getParam('language');
-            }
+		}
 
-            $response->status = JAuthentication::STATUS_SUCCESS;
-            $response->error_message = '';
-        }
-        else
-        {
-            $response->status = JAuthentication::STATUS_FAILURE;
+		// Extract the YubiKey signature
+		$signature = substr($otp, 0, -32);
+
+		if (!is_null($username))
+		{
+			// First check if this is the master key's signature
+			$master_signature = $this->params->get('masterkey', '');
+
+			if (!empty($master_signature))
+			{
+				$master_signature = substr($master_signature, 0, -32);
+			}
+
+			if ($master_signature != $signature)
+			{
+				$signature_username = $this->getUsernameFromSignature($signature);
+				
+				if ($username != $signature_username)
+				{
+					$response->status = JAuthentication::STATUS_FAILURE;
+					$response->error_message = JText::_('PLG_AUTHENTICATION_YUBIKEY_ERR_INVALIDUSER');
+
+					return false;
+				}
+			}
+		}
+		else
+		{
+			// Find the username from the signature
+			$username = $this->getUsernameFromSignature($signature);
+		}
+		
+		if (empty($username))
+		{
+			$response->status = JAuthentication::STATUS_FAILURE;
+			$response->error_message = JText::_('PLG_AUTHENTICATION_YUBIKEY_ERR_USERNOTFOUND');
+
+			return false;
+		}
+
+		// Load the user from the database
+		if (!class_exists('JUserHelper', true))
+		{
+			jimport('joomla.user.helper');
+		}
+
+		$user_id = JUserHelper::getUserId($username);
+		$user = JFactory::getUser($user_id);
+
+		// Check the YubiKey OTP for validity
+		$validOTP = $this->validateYubikeyOTP($otp);
+
+		if ($validOTP)
+		{
+			$response->username = $username;
+			$response->email = $user->email;
+			$response->fullname = $user->name;
+
+			if (JFactory::getApplication()->isAdmin())
+			{
+				$response->language = $user->getParam('admin_language');
+			}
+			else
+			{
+				$response->language = $user->getParam('language');
+			}
+
+			$response->status = JAuthentication::STATUS_SUCCESS;
+			$response->error_message = '';
+		}
+		else
+		{
+			$response->status = JAuthentication::STATUS_FAILURE;
 			$response->error_message = JText::_('PLG_AUTHENTICATION_YUBIKEY_ERR_INVALIDOTP');
 
 			return false;
-        }
-    }
-    
-    /**
+		}
+	}
+
+	/**
 	 * Validates a Yubikey OTP against the Yubikey servers
 	 *
 	 * @param   string  $otp  The OTP generated by your Yubikey
@@ -153,22 +171,22 @@ class PlgAuthenticationYubikey extends JPlugin
 	 */
 	private function validateYubikeyOTP($otp)
 	{
-        $customURL = $this->params->get('customurl', '');
-        $customURL = trim($customURL);
-        
-        if (!empty($customURL))
-        {
-            $server_queue = array($customURL);
-        }
-        else
-        {
-            $server_queue = array(
-                'api.yubico.com', 'api2.yubico.com', 'api3.yubico.com',
-                'api4.yubico.com', 'api5.yubico.com'
-            );
+		$customURL = $this->params->get('customurl', '');
+		$customURL = trim($customURL);
 
-            shuffle($server_queue);
-        }
+		if (!empty($customURL))
+		{
+			$server_queue = array($customURL);
+		}
+		else
+		{
+			$server_queue = array(
+				'api.yubico.com', 'api2.yubico.com', 'api3.yubico.com',
+				'api4.yubico.com', 'api5.yubico.com'
+			);
+
+			shuffle($server_queue);
+		}
 
 		$gotResponse = false;
 		$check = false;
@@ -180,14 +198,14 @@ class PlgAuthenticationYubikey extends JPlugin
 		{
 			$server = array_shift($server_queue);
 
-            if (!empty($customURL))
-            {
-                $uri = new JUri($server);
-            }
-            else
-            {
-                $uri = new JUri('https://' . $server . '/wsapi/2.0/verify');
-            }
+			if (!empty($customURL))
+			{
+				$uri = new JUri($server);
+			}
+			else
+			{
+				$uri = new JUri('https://' . $server . '/wsapi/2.0/verify');
+			}
 
 			// I don't see where this ID is used?
 			$uri->setVar('id', 1);
@@ -276,44 +294,52 @@ class PlgAuthenticationYubikey extends JPlugin
 
 		return true;
 	}
-    
-    private function getHttp($url)
-    {
-        if(function_exists('curl_exec'))
+
+	/**
+	 * Gets the contents of a URL doing a GET call using either cURL or
+	 * file_get_contents, whichever is available.
+	 * 
+	 * @param   string  $url  The URL to get
+	 * 
+	 * @return  mixed  False on failure, string with contents on success
+	 */
+	private function getHttp($url)
+	{
+		if (function_exists('curl_exec'))
 		{
 			// Use cURL
 			$curl_options = array(
-				CURLOPT_AUTOREFERER		=> true,
-				CURLOPT_FAILONERROR		=> true,
-				CURLOPT_FOLLOWLOCATION	=> true,
-				CURLOPT_HEADER			=> false,
-				CURLOPT_RETURNTRANSFER	=> true,
-				CURLOPT_SSL_VERIFYPEER	=> true,
-				CURLOPT_CONNECTTIMEOUT	=> 10,
-				CURLOPT_MAXREDIRS		=> 20
+				CURLOPT_AUTOREFERER => true,
+				CURLOPT_FAILONERROR => true,
+				CURLOPT_FOLLOWLOCATION => true,
+				CURLOPT_HEADER => false,
+				CURLOPT_RETURNTRANSFER => true,
+				CURLOPT_SSL_VERIFYPEER => true,
+				CURLOPT_CONNECTTIMEOUT => 10,
+				CURLOPT_MAXREDIRS => 20
 			);
-            
+
 			$ch = curl_init($url);
-			
-            @curl_setopt($ch, CURLOPT_CAINFO, __DIR__ . '/cacert.pem');
-			
-            foreach($curl_options as $option => $value)
+
+			@curl_setopt($ch, CURLOPT_CAINFO, __DIR__ . '/cacert.pem');
+
+			foreach ($curl_options as $option => $value)
 			{
 				@curl_setopt($ch, $option, $value);
 			}
-			
-            $data = curl_exec($ch);
+
+			$data = curl_exec($ch);
 		}
-		elseif(ini_get('allow_url_fopen'))
+		elseif (ini_get('allow_url_fopen'))
 		{
 			// Use fopen() wrappers
 			$options = array(
-                'http' => array(
-                    'max_redirects' => 20,
-                    'timeout'       => 10
-                )
-            );
-            
+				'http' => array(
+					'max_redirects' => 20,
+					'timeout' => 10
+				)
+			);
+
 			$context = stream_context_create($options);
 			$data = @file_get_contents($url, false, $context);
 		}
@@ -321,7 +347,48 @@ class PlgAuthenticationYubikey extends JPlugin
 		{
 			$data = false;
 		}
-        
-        return $data;
-    }
+
+		return $data;
+	}
+
+	/**
+	 * Finds the username which corresponds to a YubiKey signature
+	 * 
+	 * @param   string  $signature  The signature to check
+	 * 
+	 * @return  string  The username; empty string if it's not found
+	 */
+	private function getUsernameFromSignature($signature)
+	{
+		$db = JFactory::getDbo();
+		$query = $db->getQuery(true)
+			->select(array('user_id'))
+			->from('#__user_profiles')
+			->where('profile_key = ' . $db->q('yubikey.publickey'))
+			->where('profile_value = ' . $db->q($signature));
+		$db->setQuery($query);
+		
+		try
+		{
+			$user_id = $db->loadResult();
+			
+			if (empty($user_id))
+			{
+				return '';
+			}
+			
+			$user = JFactory::getUser($user_id);
+			
+			if ($user_id != $user->id)
+			{
+				return '';
+			}
+			
+			return $user->username;
+		}
+		catch (Exception $exc)
+		{
+			return '';
+		}
+	}
 }
