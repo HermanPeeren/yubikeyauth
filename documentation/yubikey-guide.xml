@@ -1,0 +1,1137 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE book PUBLIC "-//OASIS//DTD DocBook XML V5.0//EN"
+"http://www.docbook.org/xml/5.0/dtd/docbook.dtd">
+<book version="5.0" xmlns="http://docbook.org/ns/docbook">
+  <info>
+    <title>YubiKey Authentication Plugins</title>
+
+    <authorgroup>
+      <author>
+        <personname><firstname>Nicholas</firstname><othername>K.</othername><surname>Dionysopoulos</surname></personname>
+      </author>
+    </authorgroup>
+
+    <pubdate>October 2013</pubdate>
+
+    <legalnotice>
+      <para>Permission is granted to copy, distribute and/or modify this
+      document under the terms of the GNU Free Documentation License, Version
+      1.3 or any later version published by the Free Software Foundation; with
+      no Invariant Sections, no Front-Cover Texts, and no Back-Cover Texts. A
+      copy of the license is included in the appendix entitled "The GNU Free
+      Documentation License".</para>
+    </legalnotice>
+
+    <abstract>
+      <para>This book covers the use of the <application>YubiKey
+      Authentication\ Plugins</application>, a set of plugins which permit
+      users to log in to <trademark>Joomla!</trademark>-powered web sites
+      using their YubiKey hardware tokens.</para>
+    </abstract>
+  </info>
+
+  <part xml:id="part1-users-guide">
+    <title>User's Guide</title>
+
+    <chapter xml:id="introduction">
+      <title>Introduction</title>
+
+      <section>
+        <title>Introducing <application>YubiKey Authentication
+        Plugins</application></title>
+
+        <para>The YubiKey Authentication Plugins are a set of
+        <trademark>Joomla!</trademark> plugins which allow you and your users
+        to login to your site securely using the inexpensive and extremely
+        secure YubiKey hardware authentication token.</para>
+
+        <para>The features of this set of plugins:</para>
+
+        <itemizedlist>
+          <listitem>
+            <para>Each user can define one YubiKey to log him in to the
+            site</para>
+          </listitem>
+
+          <listitem>
+            <para>You can use only your YubiKey's generated code to log in to
+            your site; you don't need to enter your password or even your
+            username.</para>
+          </listitem>
+
+          <listitem>
+            <para>One YubiKey can be optionally defined as a "master key",
+            allowing you to log in as any user (enter the desired username and
+            use YubiKey's generated code as a password)</para>
+          </listitem>
+
+          <listitem>
+            <para>You can optionally define your own key server; very useful
+            for Intranets and Extranets</para>
+          </listitem>
+
+          <listitem>
+            <para>It can be used even when the standard Joomla! authentication
+            plugin is disabled, therefore allowing users to only log in using
+            YubiKey (password authentication disabled for extra
+            security)</para>
+          </listitem>
+        </itemizedlist>
+
+        <bridgehead>Why should you use YubiKey instead of a username and
+        password</bridgehead>
+
+        <para>The most important security aspect of managing a website is none
+        other than logging in to it. The traditional way of authenticating to
+        a web site using a username and password is highly problematic from a
+        security perspective. Short, memorable passwords are easy to
+        guess/crack whereas long, complex passwords are cumbersome. Even if
+        you do use a long, complex password it can be intercepted by means of
+        a keylogger, malware, man-in-the-middle atttack or other more
+        sophisticated methods. Using a secure (HTTPS) connection might
+        mitigate some of those attack vectors, but not all. In the end of the
+        day a standard username and password are only as good as a set of
+        keys: they can be lost, stolen or bypassed.</para>
+
+        <para>Enter YubiKey. YubiKey is a hardware token device made by YubiCo
+        which creates a strong cryptographic password which changes several
+        thousand times per second called an OTP (one time password). Unlike
+        most OTP tokens, such as those typically used by banks to secure your
+        access to their e-banking facilities, YubiKey has two unique
+        strengths:</para>
+
+        <itemizedlist>
+          <listitem>
+            <para>It includes a fixed, unique, 12-character part which
+            identifies each individual YubiKey and can act as a
+            username</para>
+          </listitem>
+
+          <listitem>
+            <para>The generated OTP <emphasis>must</emphasis> be validated
+            against YubiCo's servers. The servers (plural!) make sure that the
+            generated OTP is indeed valid using strong public key cryptography
+            and that it has never been used before. The use of multiple
+            servers to validate the OTP and the use of HTTPS ensure the
+            legitimacy of the provided OTP code. The check of never having
+            been used before protects you against replay attacks: even if an
+            adversary captures the OTP they can't use it; once it's used, it's
+            burned.</para>
+          </listitem>
+        </itemizedlist>
+
+        <para>These strengths make YubiKey an ideal method for single factor
+        authentication: insert your YubiKey to your computer's USB port, touch
+        its gold button and you are securely logged in to your site. Even if
+        you try accessing your site over a computer and a network known to be
+        compromised you can at least be sure that your login credentials
+        <emphasis>cannot</emphasis> be stolen (of course such a connection
+        would have other security issues, but login credentials theft won't be
+        one).</para>
+      </section>
+
+      <section xml:id="requirements">
+        <title>Server environment requirements</title>
+
+        <para>In order to work, <application>YubiKey Authentication
+        Plugins</application> require the following server software
+        environment:</para>
+
+        <itemizedlist>
+          <listitem>
+            <para><trademark>Joomla!</trademark> and PHP version
+            compatibilities are detailed in <link
+            xlink:href="https://www.akeebabackup.com/compatibility.html"
+            xmlns:xlink="http://www.w3.org/1999/xlink">our Version
+            Compatibility matrix</link>.</para>
+          </listitem>
+
+          <listitem>
+            <para>The cURL PHP module or URL fopen() wrappers must be enabled
+            and your site must be able to connect to YubiCo's key
+            servers.</para>
+          </listitem>
+        </itemizedlist>
+      </section>
+    </chapter>
+
+    <chapter xml:id="installation-updates-upgrades">
+      <title>Installation, updates and upgrades</title>
+
+      <section xml:id="installing">
+        <title>Installing YubiKey Authentication Plugins</title>
+
+        <para>Installing <application>YubiKey Authentication
+        Plugins</application> is no different than installing any other
+        <trademark>Joomla!</trademark> extension on your site. You can read
+        the complete instructions for installing
+        <trademark>Joomla!</trademark> extensions on the <link
+        xlink:href="http://help.joomla.org/content/view/1476/235/"
+        xmlns:xlink="http://www.w3.org/1999/xlink">official help page</link>.
+        Throughout this chapter we assume that you are familiar with these
+        instructions and we will not duplicate them.</para>
+
+        <section>
+          <title>Getting the installation packages</title>
+
+          <para>You can download the latest installation packages by visiting
+          our site at <link xlink:href="http://www.akeebabackup.com"
+          xmlns:xlink="http://www.w3.org/1999/xlink">http://www.akeebabackup.com</link>.
+          Just click on the Download, Official Releases menu item on the top
+          menu of our site. Then click on YubiKey Plugins. The releases are
+          listed with the newest release always on top. Click on a release to
+          view the files. Click on the "YubiKey Authentication Plugins" item
+          to download the ZIP installation package.</para>
+
+          <note>
+            <para>Do not forget to download the documentation PDF file or read
+            it online. As we do not provide support free of charge this is
+            your best bet in solving your problems.</para>
+          </note>
+
+          <para>The installation package can be installed on both Joomla! 2.5
+          and Joomla! 3.x sites. It can also be used to upgrade YubiKey
+          Authentication Plugins; just install it <emphasis>without</emphasis>
+          uninstalling the previous release.</para>
+
+          <para>In any case, do not extract the ZIP files yet!</para>
+        </section>
+
+        <section>
+          <title>Installing the extension</title>
+
+          <para>Log in to your site's administrator section. Click on the
+          <guimenu>Extensions</guimenu>, <guimenuitem>Manage</guimenuitem>
+          link on the top menu. In this page, locate the
+          <guibutton>Browse</guibutton> button in the <guilabel>Upload Package
+          File</guilabel> area. Locate the installation ZIP file you had
+          previously downloaded and select it. Back to the page, click on the
+          <guibutton>Upload File &amp; Install</guibutton> button. After a
+          short while, <trademark>Joomla!</trademark> will tell you that the
+          component has been installed.</para>
+
+          <section>
+            <title>Manual installation</title>
+
+            <para>Sometimes <trademark>Joomla!</trademark> is unable to
+            properly extract ZIP archives due to technical limitations on your
+            server. In this case, you can follow a manual installation
+            procedure.</para>
+
+            <para>First, you have to extract the installation ZIP file in a
+            subdirectory named <filename>akeeba</filename> on your local PC.
+            Then, upload the entire subdirectory inside your site's temporary
+            directory. At this point, there should be a subdirectory named
+            <filename>akeeba</filename> inside your site's temporary directory
+            which contains all of the ZIP package's files.</para>
+
+            <para>If you are unsure where your site's temporary directory is
+            located, you can look it up by going to the <guimenuitem>Global
+            Configuration</guimenuitem>, click on the
+            <guilabel>Server</guilabel> tab and take a look at the
+            <guilabel>Path to Temp-folder</guilabel> setting. The default
+            setting is the <filename>tmp</filename> directory under your
+            site's root. Rarely, especially on automated installations using
+            Fantastico, this might have been assigned the system-wide
+            <filename>/tmp</filename> directory. In this case, please consult
+            your host for instructions on how to upload files inside this
+            directory, or about changing your <trademark>Joomla!</trademark>
+            temporary directory back to the default location and making it
+            writable.</para>
+
+            <para>Assuming that you are past this uploading step, click on the
+            <guimenu>Extensions</guimenu>, <guimenuitem>Manage</guimenuitem>
+            link on the top menu. In this page, locate the <guibutton>Install
+            Directory</guibutton> edit box in the <guilabel>Install from
+            Directory</guilabel> area. It is already filled in with the
+            absolute path to your temporary directory, for example
+            <filename>/var/www/joomla/tmp</filename>. Please append
+            <filename>/akeeba</filename> to it. As per our example, it should
+            look something like
+            <filename>/var/www/joomla/tmp/akeeba</filename>. Then, click on
+            the <guibutton>Install</guibutton> button.</para>
+
+            <para>If you still can't install YubiKey Authentication Plugins
+            and you are receiving messages regarding unwritable directories,
+            inability to move files or other similar file system related error
+            messages, please do not ask us for support. These errors come from
+            your site set up and can best be resolved by asking for help in
+            the <link xlink:href="http://forum.joomla.org"
+            xmlns:xlink="http://www.w3.org/1999/xlink">official
+            <trademark>Joomla!</trademark> forums</link>.</para>
+          </section>
+        </section>
+      </section>
+
+      <section xml:id="update">
+        <title>Updating to the latest version</title>
+
+        <bridgehead>Checking for the latest version and upgrading</bridgehead>
+
+        <para>You can easily check for the latest published version of the ARS
+        component by visiting <link os=""
+        xlink:href="http://www.akeebabackup.com/latest"
+        xmlns:xlink="http://www.w3.org/1999/xlink">http://www.akeebabackup.com/latest</link>.
+        The page lists the version and release date of the latest YubiKey
+        Authentication Plugins release. You can check it against the data
+        which appear on Joomla!'s Extensions Manager page.</para>
+
+        <para>Updating <application>YubiKey Authentication
+        Plugins</application> to the latest version is by no means different
+        than installing the component. You do not have to uninstall the
+        previous version; in fact, you are discouraged from doing so. Simply
+        follow the installation instructions so as to install the latest
+        <application>YubiKey Authentication Plugins</application> version over
+        the existing installation. That's all! All your settings are
+        preserved.</para>
+
+        <bridgehead>Joomla! extensions update</bridgehead>
+
+        <para>There is also an alternate update path, if your server supports
+        it. It is the Joomla! Extensions Update feature. Whenever you visit
+        your site's control panel page Joomla! checks for updated versions of
+        its extensions, as long as they provide an update URL. YubiKey
+        Authentication Plugins do provide an update URL. If there is an update
+        available Joomla! will notify you. Click on the "Updates found" icon
+        to select and install the updates. Do note that if your server is
+        protected by a firewall you'll have to enable port 80 and 443 TCP
+        traffic to www.akeebabackup.com and cdn.akeebabackup.com for this
+        feature to work properly. If your host asks, the IP addresses are not
+        fixed.</para>
+      </section>
+    </chapter>
+
+    <chapter audience="xml:id" xml:id="using">
+      <title>Using the plugins</title>
+
+      <para>In this chapter we will explain how to enable the YubiKey
+      authentication plugins, as well as how to set them up.</para>
+
+      <section xml:id="initial-setup">
+        <title>Initial setup</title>
+
+        <para>After installing the extension package on your site you have to
+        make sure that <emphasis>both</emphasis> following plugins are
+        published on your site:</para>
+
+        <itemizedlist>
+          <listitem>
+            <para><guilabel>User - YubiKey</guilabel>. This plugin allows
+            users to specify the YubiKey they can log in with. Without this
+            plugin the users cannot set up YubiKey authentication.</para>
+          </listitem>
+
+          <listitem>
+            <para><guilabel>Authentication - YubiKey</guilabel>. This plugin
+            performs the YubiKey authentication. Without it you will not be
+            able to log in using a YubiKey.</para>
+          </listitem>
+        </itemizedlist>
+
+        <para>Both plugins must be published and their <option>Access</option>
+        <emphasis>must</emphasis> be set to <parameter>Public</parameter>.
+        Please note that if the access is set to anything else, e.g.
+        Registered or Special, they will NOT work properly. These are plugins
+        which allow you to log in; they need to be enabled when someone is not
+        yet logged in and this only happens when the Access is set to
+        Public.</para>
+
+        <para>The YubiKey authentication involves a web call from your site's
+        server to the key server (by default: the YubiCo servers). As a result
+        you must make sure that the following conditions are met:</para>
+
+        <itemizedlist>
+          <listitem>
+            <para>Your server needs to have the PHP cURL extension installed
+            and enabled. Alternatively, you need
+            <parameter>url_fopen_wrappers</parameter> to be enabled in your
+            server's <filename>php.ini</filename> file.</para>
+          </listitem>
+
+          <listitem>
+            <para>Your server must allow TCP/IP connections over port 443 to
+            all of the following hosts: <uri>api.yubico.com</uri>,
+            <uri>api2.yubico.com</uri>, <uri>api3.yubico.com</uri>,
+            <uri>api4.yubico.com</uri>, <uri>api5.yubico.com</uri>.</para>
+          </listitem>
+        </itemizedlist>
+
+        <para>If you are not sure please ask your host. They are the only
+        people who can definitively tell you if these conditions are met or
+        what you can do to meet them.</para>
+      </section>
+
+      <section xml:id="user-config-and-usage">
+        <title>Per user configuration and typical usage</title>
+
+        <para>The YubiKey Authentication Plugins allow you to define one
+        YubiKey per user account. You will then be able to log in to your site
+        using this YubiKey instead of your username and password.</para>
+
+        <bridgehead>Setting up a YubiKey from the back-end</bridgehead>
+
+        <para>If you have access to the back-end of the
+        <trademark>Joomla!</trademark> web site you can set up the YubiKey
+        authentication for yourself or any other user of the site. Here's
+        how.</para>
+
+        <procedure>
+          <step>
+            <para>Click on <guimenu>Users</guimenu>, <guimenuitem>User
+            Manager</guimenuitem> from the top menu.</para>
+          </step>
+
+          <step>
+            <para>Click on a username.</para>
+          </step>
+
+          <step>
+            <para>Find the YubiKey Integration slider (Joomla! 2.5) or tab
+            (Joomla! 3.x) and click on it.</para>
+          </step>
+
+          <step>
+            <para>In the YubiKey signature area:</para>
+
+            <itemizedlist>
+              <listitem>
+                <para>If you have the YubiKey at hand (setting up your user
+                account): insert the YubiKey in a USB port on your computer,
+                wait for the LED to light steady green and touch the gold
+                button.</para>
+              </listitem>
+
+              <listitem>
+                <para>If you do not have the YubiKey at hand (setting up
+                another user's account): you need to enter the 12 character
+                Public Identity of the user's YubiKey. These are the first 12
+                characters (fixed portion) of the code YubiKey generates when
+                you touch its gold button. If you're setting up another user's
+                YubiKey ask him to send you a code generated by YubiKey and
+                paste it in this box, either verbatim or just its first 12
+                characters; our plugin will cut off excess characters
+                automatically.</para>
+              </listitem>
+            </itemizedlist>
+          </step>
+
+          <step>
+            <para>Click on Save &amp; Close</para>
+          </step>
+        </procedure>
+
+        <bridgehead>Setting up a YubiKey from the front-end</bridgehead>
+
+        <para>This is useful for self-management of Yubikey authentication.
+        You will need to go to your user profile editor page. If there is no
+        link provided by your site's manager you can visit a URL like
+        <uri>http://www.example.com/index.php?option=com_users&amp;view=profile&amp;layout=edit</uri>
+        where <uri>http://www.example.com</uri> is the URL to your
+        site.</para>
+
+        <para>On that page you will see an area called <guilabel>YubiKey
+        integration</guilabel>. Click inside the <guilabel>YubiKey
+        signature</guilabel> text entry field. Insert your YubiKey in your
+        computer's USB port and wait for its LED to light up steady green. Now
+        touch the gold button. The profile is saved automatically with your
+        YubiKey information.</para>
+
+        <note>
+          <para>You will notice that only the first 12 characters of your
+          YubiKey code are stored. This is normal. That's the fixed part of
+          your YubiKey's code, called the "Public Identity" of your YubiKey
+          device. It is used to uniquely identify your own Yubikey among the
+          other YubiKeys out there.</para>
+        </note>
+
+        <bridgehead>Logging in using a YubiKey, without a
+        username</bridgehead>
+
+        <para>If you have set up a specific YubiKey only on one user account
+        you can use the single factor login without a username method.</para>
+
+        <procedure>
+          <step>
+            <para>In the login area of your site (front-end or back-end) click
+            inside either the username or the password field.</para>
+          </step>
+
+          <step>
+            <para>Insert your YubiKey in your computer's USB port and wait for
+            its LED to light up steady green.</para>
+          </step>
+
+          <step>
+            <para>Now touch the gold button.</para>
+          </step>
+
+          <step>
+            <para>The YubiKey types its code in the field and automatically
+            presses the ENTER key. Our plugin figures out which user is
+            assigned this YubiKey, validates the code against the key server
+            and logs in the user.</para>
+          </step>
+        </procedure>
+
+        <para>This is the simplest way to log in as you don't have to type
+        anything, just touch the YubiKey and you're in!</para>
+
+        <bridgehead>Logging in using a YubiKey instead of a
+        password</bridgehead>
+
+        <para>If you have set up a specific YubiKey in more that one user
+        account the previous method will work erratically as the plugin cannot
+        reliably determine which user it should log in. In this case you can
+        use your YubiKey instead of a password.</para>
+
+        <procedure>
+          <step>
+            <para>In the login area of your site (front-end or back-end) enter
+            your username, then click inside the password field.</para>
+          </step>
+
+          <step>
+            <para>Insert your YubiKey in your computer's USB port and wait for
+            itsLED to light up steady green.</para>
+          </step>
+
+          <step>
+            <para>Now touch the gold button.</para>
+          </step>
+
+          <step>
+            <para>The YubiKey types its code in the field and automatically
+            presses the ENTER key. Our plugin checks that they YubiKey
+            configured for the specified username matches the code generated
+            by your YubiKey, validates the code against the key server and
+            logs in the user.</para>
+          </step>
+        </procedure>
+
+        <para>This is a slightly more bothersome way to log in as you need to
+        type your username before touching the YubiKey.</para>
+      </section>
+
+      <section xml:id="defining-a-master-key">
+        <title>Defining a master key</title>
+
+        <para>The Authentication - YubiKey plugin has an additional very
+        powerful feature: you can define a "master key", i.e. a YubiKey which
+        allows its owner to log in as any other user on the site.</para>
+
+        <important>
+          <para>With great power comes great responsibility. The person
+          holding this YubiKey can log in as any user on the site, including
+          Super Users. This has obvious security implications: it's just like
+          a hotel's master key; if it's lost all doors are unlocked for the
+          thief. On top of that it comes with a great ethical and legal
+          implication: depending on the nature of the site, being able to log
+          in as an arbitrary user may allow the holder of they key to perform
+          unethical / punishable by law actions, such as reading personal
+          messages.</para>
+
+          <para>The authors of this plugin would like to remind you that we
+          are not to be held liable for the actions of its users, as per the
+          GNU General Public License version 3 terms and conditions. In our
+          view the master key is like a superhero's power: you must use it
+          wisely and with parsimony, for good and not for evil.</para>
+        </important>
+
+        <para>To enable this feature go to your site's back-end and click on
+        <guimenu>Extensions</guimenu>, <guimenuitem>Plug-in
+        Manager</guimenuitem>. Find and edit the <guilabel>Authentication -
+        YubiKey</guilabel> plugin. Under <guilabel>Basic Options</guilabel>
+        you will see the <guilabel>Master key</guilabel> parameter. You need
+        to enter your YubiKey's "Public Identity", i.e. the first, fixed, 12
+        characters of your YubiKey's code. In order to do that, insert your
+        YubiKey in your computer's USB port and wait for its LED to light up
+        steady green. Now touch the gold button. delete everything except the
+        first 12 characters. Then click on Save &amp; Close.</para>
+
+        <para>From that point this YubiKey is a Master Key. In any login form
+        on your site, front-end or back-end, enter the username you want to
+        log in with and click on the password field. Insert your YubiKey in
+        your computer's USB port and wait for itsLED to light up steady green.
+        Now touch the gold button. The plugin verified that the code
+        corresponds to the Master Key, verified the code against they key
+        servers and you are logged in as that user.</para>
+      </section>
+
+      <section xml:id="custom-key-server">
+        <title>Using a custom key server</title>
+
+        <para>There are some use cases where you might not want to validate
+        the YubiKeys against the public YubiKey key servers. For example when
+        you have an Intranet or Extranet which is completely isolated from the
+        public Internet you can of course not use the public key servers.
+        YubiCo, the makers of YubiKey, <link
+        xlink:href="http://www.yubico.com/develop/open-source-software/validation-server/"
+        xmlns:xlink="http://www.w3.org/1999/xlink">provide you with the
+        necessary software</link> to create your own, private key servers
+        ("validation servers" and "key storage modules"). You can, of course,
+        use them with our plugins.</para>
+
+        <para>To enable this feature go to your site's back-end and click on
+        <guimenu>Extensions</guimenu>, <guimenuitem>Plug-in
+        Manager</guimenuitem>. Find and edit the <guilabel>Authentication -
+        YubiKey</guilabel> plugin. Under <guilabel>Basic Options</guilabel>
+        you will see the <guilabel>Custom validation URL</guilabel> parameter.
+        You need to enter your private validation server's fully qualified
+        URL, e.g.
+        <uri>http://www.example.com/mykeyserver/wsapi/2.0/verify</uri>. Please
+        note that you MUST include the <uri>/wsapi/2.0/verify</uri> suffix in
+        the URL. Then click on Save &amp; Close.</para>
+
+        <para>If you want to revert to the public key server please delete the
+        contents of the <guilabel>Custom validation URL</guilabel>
+        field.</para>
+      </section>
+
+      <section xml:id="tightening-security">
+        <title>Tightening security</title>
+
+        <para>Once you have verified that your YubiKey authentication is
+        working properly it's time to tighten the security of your site's
+        login. This will make sure that adversaries will have a very hard time
+        circumventing the login process of your site, eventually making them
+        to give up or at the very least seek different ways of infiltrating
+        your site (remember that you can never make your site airtight and you
+        can never convince malicious actors to call it quits at all
+        costs).</para>
+
+        <bridgehead>A long password (which is never used)</bridgehead>
+
+        <para>This is the low-tech and safe approach. Once you have YubiKey
+        authentication set up on your site change your password to something
+        ridiculously long and complicated. We would recommend a 64 character
+        password consisting of uppercase and lowercase letters, numbers and
+        special characters. An adversary trying to brute force it would need
+        several million times more time than the age of the Universe. Even if
+        computers get billions of times faster in our lifetime it will still
+        be impractical to brute force ("crack") such a password.</para>
+
+        <para>A great place is generate such a ridiculously complex password
+        is the <link xlink:href="http://strongpasswordgenerator.com/"
+        xmlns:xlink="http://www.w3.org/1999/xlink">Strong Password
+        Generator</link> website. Set the password length to 64, leave the
+        Punctuation checkbox selected and click on <guibutton>Generate strong
+        password</guibutton>. It looks like a long piece of garbage. THAT'S
+        PERFECT! Change your user account's password to that. Note that down
+        in a piece of paper and store it somewhere that nobody will find it.
+        Even better, burn the paper and wash the ashes down with hydrochloric
+        acid (it makes recovery of the burned paper by glycerin impossible).
+        If you are paranoid about security you will never, ever use it to log
+        in to your site: using a password always poses the risk of it being
+        stolen and used by an adversary.</para>
+
+        <bridgehead>Disabling the password authentication
+        altogether</bridgehead>
+
+        <para>This is the equivalent of the nuclear option for your site's
+        login: nobody can login using a regular username and password. The
+        only possible method of logging will be using a YubiKey. The obvious
+        drawback is that creating a new user account can only be performed by
+        a Super User in the back-end of the site and the new user must already
+        have or be given a YubiKey. As you understand this is not a suitable
+        method for public websites where people are supposed to register /
+        subscribe. It is, however, an excellent solution for Intranets,
+        Extranets and public sites where only a limited set of people are
+        supposed to have login access (e.g. a company website or even a blog
+        which uses a third party service for comments).</para>
+
+        <para>In order to do that go to your site's back-end,
+        <guimenu>Extensions</guimenu>, <guimenuitem>Plug-in
+        Manager</guimenuitem>. Filter the plugins by choosing the
+        <option>authentication</option> type. Disable all plugins except the
+        <guilabel>Authentication - YubiKey</guilabel> plugin. That's it.
+        Logging in using a username / password is now impossible. You can type
+        them, they won't be accepted. Your site's login is now restricted to
+        using YubiKeys.</para>
+      </section>
+
+      <section xml:id="information-for-devs">
+        <title>Information for developers</title>
+
+        <para>If you thought that was all that this set of plugins has to
+        offer, you're wrong. This plugin was created by hardcore Joomla!
+        developers with a knack of providing solutions suitable for other
+        developers.</para>
+
+        <section xml:id="mass-assignment-yubikeys-to-users">
+          <title>Mass assignment of YubiKeys to users</title>
+
+          <para/>
+        </section>
+
+        <section xml:id="programmatic-access-yubikey-auth">
+          <title>Programmatic access to YubiKey authentication</title>
+
+          <para/>
+        </section>
+      </section>
+    </chapter>
+  </part>
+
+  <part xml:id="appendices">
+    <title>Appendices</title>
+
+    <appendix version="5.0" xml:id="gnu-fdl">
+      <title>GNU Free Documentation License</title>
+
+      <para>Copyright (C) 2000, 2001, 2002 Free Software Foundation,
+      <abbrev>Inc.</abbrev> 51 Franklin <abbrev>St</abbrev> , Fifth Floor,
+      Boston, <abbrev>MA</abbrev> 02110-1301 <abbrev
+      role="initialism">USA</abbrev> . Everyone is permitted to copy and
+      distribute verbatim copies of this license document, but changing it is
+      not allowed.</para>
+
+      <bridgehead renderas="sect1">0. PREAMBLE</bridgehead>
+
+      <para>The purpose of this License is to make a manual, textbook, or
+      other functional and useful document "free" in the sense of freedom: to
+      assure everyone the effective freedom to copy and redistribute it, with
+      or without modifying it, either commercially or noncommercially.
+      Secondarily, this License preserves for the author and publisher a way
+      to get credit for their work, while not being considered responsible for
+      modifications made by others.</para>
+
+      <para>This License is a kind of "copyleft", which means that derivative
+      works of the document must themselves be free in the same sense. It
+      complements the GNU General Public License, which is a copyleft license
+      designed for free software.</para>
+
+      <para>We have designed this License in order to use it for manuals for
+      free software, because free software needs free documentation: a free
+      program should come with manuals providing the same freedoms that the
+      software does. But this License is not limited to software manuals; it
+      can be used for any textual work, regardless of subject matter or
+      whether it is published as a printed book. We recommend this License
+      principally for works whose purpose is instruction or reference.</para>
+
+      <bridgehead renderas="sect1">1. APPLICABILITY AND
+      DEFINITIONS</bridgehead>
+
+      <para>This License applies to any manual or other work, in any medium,
+      that contains a notice placed by the copyright holder saying it can be
+      distributed under the terms of this License. Such a notice grants a
+      world-wide, royalty-free license, unlimited in duration, to use that
+      work under the conditions stated herein. The "Document", below, refers
+      to any such manual or work. Any member of the public is a licensee, and
+      is addressed as "you". You accept the license if you copy, modify or
+      distribute the work in a way requiring permission under copyright
+      law.</para>
+
+      <para>A "Modified Version" of the Document means any work containing the
+      Document or a portion of it, either copied verbatim, or with
+      modifications and/or translated into another language.</para>
+
+      <para>A "Secondary Section" is a named appendix or a front-matter
+      section of the Document that deals exclusively with the relationship of
+      the publishers or authors of the Document to the Document's overall
+      subject (or to related matters) and contains nothing that could fall
+      directly within that overall subject. (Thus, if the Document is in part
+      a textbook of mathematics, a Secondary Section may not explain any
+      mathematics.) The relationship could be a matter of historical
+      connection with the subject or with related matters, or of legal,
+      commercial, philosophical, ethical or political position regarding
+      them.</para>
+
+      <para>The "Invariant Sections" are certain Secondary Sections whose
+      titles are designated, as being those of Invariant Sections, in the
+      notice that says that the Document is released under this License. If a
+      section does not fit the above definition of Secondary then it is not
+      allowed to be designated as Invariant. The Document may contain zero
+      Invariant Sections. If the Document does not identify any Invariant
+      Sections then there are none.</para>
+
+      <para>The "Cover Texts" are certain short passages of text that are
+      listed, as Front-Cover Texts or Back-Cover Texts, in the notice that
+      says that the Document is released under this License. A Front-Cover
+      Text may be at most 5 words, and a Back-Cover Text may be at most 25
+      words.</para>
+
+      <para>A "Transparent" copy of the Document means a machine-readable
+      copy, represented in a format whose specification is available to the
+      general public, that is suitable for revising the document
+      straightforwardly with generic text editors or (for images composed of
+      pixels) generic paint programs or (for drawings) some widely available
+      drawing editor, and that is suitable for input to text formatters or for
+      automatic translation to a variety of formats suitable for input to text
+      formatters. A copy made in an otherwise Transparent file format whose
+      markup, or absence of markup, has been arranged to thwart or discourage
+      subsequent modification by readers is not Transparent. An image format
+      is not Transparent if used for any substantial amount of text. A copy
+      that is not "Transparent" is called "Opaque".</para>
+
+      <para>Examples of suitable formats for Transparent copies include plain
+      ASCII without markup, Texinfo input format, LaTeX input format, SGML or
+      XML using a publicly available DTD, and standard-conforming simple HTML,
+      PostScript or PDF designed for human modification. Examples of
+      transparent image formats include PNG, XCF and JPG. Opaque formats
+      include proprietary formats that can be read and edited only by
+      proprietary word processors, SGML or XML for which the DTD and/or
+      processing tools are not generally available, and the machine-generated
+      HTML, PostScript or PDF produced by some word processors for output
+      purposes only.</para>
+
+      <para>The "Title Page" means, for a printed book, the title page itself,
+      plus such following pages as are needed to hold, legibly, the material
+      this License requires to appear in the title page. For works in formats
+      which do not have any title page as such, "Title Page" means the text
+      near the most prominent appearance of the work's title, preceding the
+      beginning of the body of the text.</para>
+
+      <para>A section "Entitled XYZ" means a named subunit of the Document
+      whose title either is precisely XYZ or contains XYZ in parentheses
+      following text that translates XYZ in another language. (Here XYZ stands
+      for a specific section name mentioned below, such as "Acknowledgements",
+      "Dedications", "Endorsements", or "History".) To "Preserve the Title" of
+      such a section when you modify the Document means that it remains a
+      section "Entitled XYZ" according to this definition.</para>
+
+      <para>The Document may include Warranty Disclaimers next to the notice
+      which states that this License applies to the Document. These Warranty
+      Disclaimers are considered to be included by reference in this License,
+      but only as regards disclaiming warranties: any other implication that
+      these Warranty Disclaimers may have is void and has no effect on the
+      meaning of this License.</para>
+
+      <bridgehead renderas="sect1">2. VERBATIM COPYING</bridgehead>
+
+      <para>You may copy and distribute the Document in any medium, either
+      commercially or noncommercially, provided that this License, the
+      copyright notices, and the license notice saying this License applies to
+      the Document are reproduced in all copies, and that you add no other
+      conditions whatsoever to those of this License. You may not use
+      technical measures to obstruct or control the reading or further copying
+      of the copies you make or distribute. However, you may accept
+      compensation in exchange for copies. If you distribute a large enough
+      number of copies you must also follow the conditions in section
+      3.</para>
+
+      <para>You may also lend copies, under the same conditions stated above,
+      and you may publicly display copies.</para>
+
+      <bridgehead renderas="sect1">3. COPYING IN QUANTITY</bridgehead>
+
+      <para>If you publish printed copies (or copies in media that commonly
+      have printed covers) of the Document, numbering more than 100, and the
+      Document's license notice requires Cover Texts, you must enclose the
+      copies in covers that carry, clearly and legibly, all these Cover Texts:
+      Front-Cover Texts on the front cover, and Back-Cover Texts on the back
+      cover. Both covers must also clearly and legibly identify you as the
+      publisher of these copies. The front cover must present the full title
+      with all words of the title equally prominent and visible. You may add
+      other material on the covers in addition. Copying with changes limited
+      to the covers, as long as they preserve the title of the Document and
+      satisfy these conditions, can be treated as verbatim copying in other
+      respects.</para>
+
+      <para>If the required texts for either cover are too voluminous to fit
+      legibly, you should put the first ones listed (as many as fit
+      reasonably) on the actual cover, and continue the rest onto adjacent
+      pages.</para>
+
+      <para>If you publish or distribute Opaque copies of the Document
+      numbering more than 100, you must either include a machine-readable
+      Transparent copy along with each Opaque copy, or state in or with each
+      Opaque copy a computer-network location from which the general
+      network-using public has access to download using public-standard
+      network protocols a complete Transparent copy of the Document, free of
+      added material. If you use the latter option, you must take reasonably
+      prudent steps, when you begin distribution of Opaque copies in quantity,
+      to ensure that this Transparent copy will remain thus accessible at the
+      stated location until at least one year after the last time you
+      distribute an Opaque copy (directly or through your agents or retailers)
+      of that edition to the public.</para>
+
+      <para>It is requested, but not required, that you contact the authors of
+      the Document well before redistributing any large number of copies, to
+      give them a chance to provide you with an updated version of the
+      Document.</para>
+
+      <bridgehead renderas="sect1">4. MODIFICATIONS</bridgehead>
+
+      <para>You may copy and distribute a Modified Version of the Document
+      under the conditions of sections 2 and 3 above, provided that you
+      release the Modified Version under precisely this License, with the
+      Modified Version filling the role of the Document, thus licensing
+      distribution and modification of the Modified Version to whoever
+      possesses a copy of it. In addition, you must do these things in the
+      Modified Version:</para>
+
+      <orderedlist numeration="upperalpha">
+        <listitem>
+          <simpara>Use in the Title Page (and on the covers, if any) a title
+          distinct from that of the Document, and from those of previous
+          versions (which should, if there were any, be listed in the History
+          section of the Document). You may use the same title as a previous
+          version if the original publisher of that version gives
+          permission.</simpara>
+        </listitem>
+
+        <listitem>
+          <simpara>List on the Title Page, as authors, one or more persons or
+          entities responsible for authorship of the modifications in the
+          Modified Version, together with at least five of the principal
+          authors of the Document (all of its principal authors, if it has
+          fewer than five), unless they release you from this
+          requirement.</simpara>
+        </listitem>
+
+        <listitem>
+          <simpara>State on the Title page the name of the publisher of the
+          Modified Version, as the publisher.</simpara>
+        </listitem>
+
+        <listitem>
+          <simpara>Preserve all the copyright notices of the
+          Document.</simpara>
+        </listitem>
+
+        <listitem>
+          <simpara>Add an appropriate copyright notice for your modifications
+          adjacent to the other copyright notices.</simpara>
+        </listitem>
+
+        <listitem>
+          <simpara>Include, immediately after the copyright notices, a license
+          notice giving the public permission to use the Modified Version
+          under the terms of this License, in the form shown in the Addendum
+          below.</simpara>
+        </listitem>
+
+        <listitem>
+          <simpara>Preserve in that license notice the full lists of Invariant
+          Sections and required Cover Texts given in the Document's license
+          notice.</simpara>
+        </listitem>
+
+        <listitem>
+          <simpara>Include an unaltered copy of this License.</simpara>
+        </listitem>
+
+        <listitem>
+          <simpara>Preserve the section Entitled "History", Preserve its
+          Title, and add to it an item stating at least the title, year, new
+          authors, and publisher of the Modified Version as given on the Title
+          Page. If there is no section Entitled "History" in the Document,
+          create one stating the title, year, authors, and publisher of the
+          Document as given on its Title Page, then add an item describing the
+          Modified Version as stated in the previous sentence.</simpara>
+        </listitem>
+
+        <listitem>
+          <simpara>Preserve the network location, if any, given in the
+          Document for public access to a Transparent copy of the Document,
+          and likewise the network locations given in the Document for
+          previous versions it was based on. These may be placed in the
+          "History" section. You may omit a network location for a work that
+          was published at least four years before the Document itself, or if
+          the original publisher of the version it refers to gives
+          permission.</simpara>
+        </listitem>
+
+        <listitem>
+          <simpara>For any section Entitled "Acknowledgements" or
+          "Dedications", Preserve the Title of the section, and preserve in
+          the section all the substance and tone of each of the contributor
+          acknowledgements and/or dedications given therein.</simpara>
+        </listitem>
+
+        <listitem>
+          <simpara>Preserve all the Invariant Sections of the Document,
+          unaltered in their text and in their titles. Section numbers or the
+          equivalent are not considered part of the section titles.</simpara>
+        </listitem>
+
+        <listitem>
+          <simpara>Delete any section Entitled "Endorsements". Such a section
+          may not be included in the Modified Version.</simpara>
+        </listitem>
+
+        <listitem>
+          <simpara>Do not retitle any existing section to be Entitled
+          "Endorsements" or to conflict in title with any Invariant
+          Section.</simpara>
+        </listitem>
+
+        <listitem>
+          <simpara>Preserve any Warranty Disclaimers.</simpara>
+        </listitem>
+      </orderedlist>
+
+      <para>If the Modified Version includes new front-matter sections or
+      appendices that qualify as Secondary Sections and contain no material
+      copied from the Document, you may at your option designate some or all
+      of these sections as invariant. To do this, add their titles to the list
+      of Invariant Sections in the Modified Version's license notice. These
+      titles must be distinct from any other section titles.</para>
+
+      <para>You may add a section Entitled "Endorsements", provided it
+      contains nothing but endorsements of your Modified Version by various
+      parties--for example, statements of peer review or that the text has
+      been approved by an organization as the authoritative definition of a
+      standard.</para>
+
+      <para>You may add a passage of up to five words as a Front-Cover Text,
+      and a passage of up to 25 words as a Back-Cover Text, to the end of the
+      list of Cover Texts in the Modified Version. Only one passage of
+      Front-Cover Text and one of Back-Cover Text may be added by (or through
+      arrangements made by) any one entity. If the Document already includes a
+      cover text for the same cover, previously added by you or by arrangement
+      made by the same entity you are acting on behalf of, you may not add
+      another; but you may replace the old one, on explicit permission from
+      the previous publisher that added the old one.</para>
+
+      <para>The author(s) and publisher(s) of the Document do not by this
+      License give permission to use their names for publicity for or to
+      assert or imply endorsement of any Modified Version.</para>
+
+      <bridgehead renderas="sect1">5. COMBINING DOCUMENTS</bridgehead>
+
+      <para>You may combine the Document with other documents released under
+      this License, under the terms defined in section 4 above for modified
+      versions, provided that you include in the combination all of the
+      Invariant Sections of all of the original documents, unmodified, and
+      list them all as Invariant Sections of your combined work in its license
+      notice, and that you preserve all their Warranty Disclaimers.</para>
+
+      <para>The combined work need only contain one copy of this License, and
+      multiple identical Invariant Sections may be replaced with a single
+      copy. If there are multiple Invariant Sections with the same name but
+      different contents, make the title of each such section unique by adding
+      at the end of it, in parentheses, the name of the original author or
+      publisher of that section if known, or else a unique number. Make the
+      same adjustment to the section titles in the list of Invariant Sections
+      in the license notice of the combined work.</para>
+
+      <para>In the combination, you must combine any sections Entitled
+      "History" in the various original documents, forming one section
+      Entitled "History"; likewise combine any sections Entitled
+      "Acknowledgements", and any sections Entitled "Dedications". You must
+      delete all sections Entitled "Endorsements".</para>
+
+      <bridgehead renderas="sect1">6. COLLECTIONS OF DOCUMENTS</bridgehead>
+
+      <para>You may make a collection consisting of the Document and other
+      documents released under this License, and replace the individual copies
+      of this License in the various documents with a single copy that is
+      included in the collection, provided that you follow the rules of this
+      License for verbatim copying of each of the documents in all other
+      respects.</para>
+
+      <para>You may extract a single document from such a collection, and
+      distribute it individually under this License, provided you insert a
+      copy of this License into the extracted document, and follow this
+      License in all other respects regarding verbatim copying of that
+      document.</para>
+
+      <bridgehead renderas="sect1">7. AGGREGATION WITH INDEPENDENT
+      WORKS</bridgehead>
+
+      <para>A compilation of the Document or its derivatives with other
+      separate and independent documents or works, in or on a volume of a
+      storage or distribution medium, is called an "aggregate" if the
+      copyright resulting from the compilation is not used to limit the legal
+      rights of the compilation's users beyond what the individual works
+      permit. When the Document is included in an aggregate, this License does
+      not apply to the other works in the aggregate which are not themselves
+      derivative works of the Document.</para>
+
+      <para>If the Cover Text requirement of section 3 is applicable to these
+      copies of the Document, then if the Document is less than one half of
+      the entire aggregate, the Document's Cover Texts may be placed on covers
+      that bracket the Document within the aggregate, or the electronic
+      equivalent of covers if the Document is in electronic form. Otherwise
+      they must appear on printed covers that bracket the whole
+      aggregate.</para>
+
+      <bridgehead renderas="sect1">8. TRANSLATION</bridgehead>
+
+      <para>Translation is considered a kind of modification, so you may
+      distribute translations of the Document under the terms of section 4.
+      Replacing Invariant Sections with translations requires special
+      permission from their copyright holders, but you may include
+      translations of some or all Invariant Sections in addition to the
+      original versions of these Invariant Sections. You may include a
+      translation of this License, and all the license notices in the
+      Document, and any Warranty Disclaimers, provided that you also include
+      the original English version of this License and the original versions
+      of those notices and disclaimers. In case of a disagreement between the
+      translation and the original version of this License or a notice or
+      disclaimer, the original version will prevail.</para>
+
+      <para>If a section in the Document is Entitled "Acknowledgements",
+      "Dedications", or "History", the requirement (section 4) to Preserve its
+      Title (section 1) will typically require changing the actual
+      title.</para>
+
+      <bridgehead renderas="sect1">9. TERMINATION</bridgehead>
+
+      <para>You may not copy, modify, sublicense, or distribute the Document
+      except as expressly provided for under this License. Any other attempt
+      to copy, modify, sublicense or distribute the Document is void, and will
+      automatically terminate your rights under this License. However, parties
+      who have received copies, or rights, from you under this License will
+      not have their licenses terminated so long as such parties remain in
+      full compliance.</para>
+
+      <bridgehead renderas="sect1">10. FUTURE REVISIONS OF THIS
+      LICENSE</bridgehead>
+
+      <para>The Free Software Foundation may publish new, revised versions of
+      the GNU Free Documentation License from time to time. Such new versions
+      will be similar in spirit to the present version, but may differ in
+      detail to address new problems or concerns. See <link
+      xlink:href="http://www.gnu.org/copyleft/"
+      xmlns:xlink="http://www.w3.org/1999/xlink">
+      http://www.gnu.org/copyleft/</link> .</para>
+
+      <para>Each version of the License is given a distinguishing version
+      number. If the Document specifies that a particular numbered version of
+      this License "or any later version" applies to it, you have the option
+      of following the terms and conditions either of that specified version
+      or of any later version that has been published (not as a draft) by the
+      Free Software Foundation. If the Document does not specify a version
+      number of this License, you may choose any version ever published (not
+      as a draft) by the Free Software Foundation.</para>
+
+      <bridgehead renderas="sect1">ADDENDUM: How to use this License for your
+      documents</bridgehead>
+
+      <para>To use this License in a document you have written, include a copy
+      of the License in the document and put the following copyright and
+      license notices just after the title page:</para>
+
+      <blockquote>
+        <para>Copyright (C) YEAR YOUR NAME.</para>
+
+        <para>Permission is granted to copy, distribute and/or modify this
+        document under the terms of the GNU Free Documentation License,
+        Version 1.2 or any later version published by the Free Software
+        Foundation; with no Invariant Sections, no Front-Cover Texts, and no
+        Back-Cover Texts. A copy of the license is included in the section
+        entitled "GNU Free Documentation License".</para>
+      </blockquote>
+
+      <para>If you have Invariant Sections, Front-Cover Texts and Back-Cover
+      Texts, replace the "with...Texts." line with this:</para>
+
+      <blockquote>
+        <para>with the Invariant Sections being LIST THEIR TITLES, with the
+        Front-Cover Texts being LIST, and with the Back-Cover Texts being
+        LIST.</para>
+      </blockquote>
+
+      <para>If you have Invariant Sections without Cover Texts, or some other
+      combination of the three, merge those two alternatives to suit the
+      situation.</para>
+
+      <para>If your document contains nontrivial examples of program code, we
+      recommend releasing these examples in parallel under your choice of free
+      software license, such as the GNU General Public License, to permit
+      their use in free software.</para>
+    </appendix>
+  </part>
+</book>
