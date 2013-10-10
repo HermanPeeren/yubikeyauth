@@ -141,7 +141,7 @@ class plgUserYubikey extends JPlugin
 				$query = $db->getQuery(true)
 					->delete('#__user_profiles')
 					->where('user_id = ' . $db->q($userId))
-					->where('profile_key LIKE ' . $db->q('ats.%'));
+					->where('profile_key LIKE ' . $db->q('yubikey.%'));
 				$db->setQuery($query);
 
 				if (!$db->execute())
@@ -213,7 +213,7 @@ class plgUserYubikey extends JPlugin
 				$query = $db->getQuery(true)
 					->delete('#__user_profiles')
 					->where('user_id = ' . $db->q($userId))
-					->where('profile_key LIKE ' . $db->q('ats.%'));
+					->where('profile_key LIKE ' . $db->q('yubikey.%'));
 				$db->setQuery($query);
 
 				if (!$db->execute())
