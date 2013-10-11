@@ -1,4 +1,8 @@
 /release/*
 /nbproject
-
+/build/bin
+/build/buildlang
+/build/phingext
+/build/tools
+/plugins/*/yubikey/language/en-GB
 /documentation/yubikey-guide.xml~
