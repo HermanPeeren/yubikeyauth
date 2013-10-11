@@ -98,8 +98,8 @@ class PlgAuthenticationYubikey extends JPlugin
 
 			if ($master_signature != $signature)
 			{
-				$signature_username = $this->getUsernameFromSignature($signature);
-				
+				$signature_username = $this->onGetUsernameFromYubikeySignature($signature);
+
 				if ($username != $signature_username)
 				{
 					$response->status = JAuthentication::STATUS_FAILURE;
@@ -112,9 +112,9 @@ class PlgAuthenticationYubikey extends JPlugin
 		else
 		{
 			// Find the username from the signature
-			$username = $this->getUsernameFromSignature($signature);
+			$username = $this->onGetUsernameFromYubikeySignature($signature);
 		}
-		
+
 		if (empty($username))
 		{
 			$response->status = JAuthentication::STATUS_FAILURE;
@@ -133,7 +133,7 @@ class PlgAuthenticationYubikey extends JPlugin
 		$user = JFactory::getUser($user_id);
 
 		// Check the YubiKey OTP for validity
-		$validOTP = $this->validateYubikeyOTP($otp);
+		$validOTP = $this->onValidateYubikeyOTP($otp);
 
 		if ($validOTP)
 		{
@@ -169,7 +169,7 @@ class PlgAuthenticationYubikey extends JPlugin
 	 *
 	 * @return  boolean  True if it's a valid OTP
 	 */
-	private function validateYubikeyOTP($otp)
+	public function onValidateYubikeyOTP($otp)
 	{
 		$customURL = $this->params->get('customurl', '');
 		$customURL = trim($customURL);
@@ -298,9 +298,9 @@ class PlgAuthenticationYubikey extends JPlugin
 	/**
 	 * Gets the contents of a URL doing a GET call using either cURL or
 	 * file_get_contents, whichever is available.
-	 * 
+	 *
 	 * @param   string  $url  The URL to get
-	 * 
+	 *
 	 * @return  mixed  False on failure, string with contents on success
 	 */
 	private function getHttp($url)
@@ -353,13 +353,18 @@ class PlgAuthenticationYubikey extends JPlugin
 
 	/**
 	 * Finds the username which corresponds to a YubiKey signature
-	 * 
+	 *
 	 * @param   string  $signature  The signature to check
-	 * 
+	 *
 	 * @return  string  The username; empty string if it's not found
 	 */
-	private function getUsernameFromSignature($signature)
+	public function onGetUsernameFromYubikeySignature($signature)
 	{
+		if (strlen($signature) > 32)
+		{
+			$signature = substr($signature, 0, -32);
+		}
+
 		$db = JFactory::getDbo();
 		$query = $db->getQuery(true)
 			->select(array('user_id'))
@@ -367,23 +372,23 @@ class PlgAuthenticationYubikey extends JPlugin
 			->where('profile_key = ' . $db->q('yubikey.publickey'))
 			->where('profile_value = ' . $db->q($signature));
 		$db->setQuery($query);
-		
+
 		try
 		{
 			$user_id = $db->loadResult();
-			
+
 			if (empty($user_id))
 			{
 				return '';
 			}
-			
+
 			$user = JFactory::getUser($user_id);
-			
+
 			if ($user_id != $user->id)
 			{
 				return '';
 			}
-			
+
 			return $user->username;
 		}
 		catch (Exception $exc)

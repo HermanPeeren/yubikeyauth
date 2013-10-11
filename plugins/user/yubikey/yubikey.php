@@ -58,7 +58,7 @@ class plgUserYubikey extends JPlugin
 
 				// Load the profile data from the database.
 				$db = JFactory::getDbo();
-				
+
 				$query = $db->getQuery(true)
 					->select(array('profile_key', 'profile_value'))
 					->from('#__user_profiles')
@@ -66,11 +66,11 @@ class plgUserYubikey extends JPlugin
 					->where('profile_key LIKE ' . $db->q('yubikey.%'))
 					->order('ordering');
 				$db->setQuery($query);
-				
+
 				try
 				{
 					$results = $db->loadRowList();
-					
+
 					if ($db->getErrorNum())
 					{
 						$this->_subject->setError($db->getErrorMsg());
@@ -81,7 +81,7 @@ class plgUserYubikey extends JPlugin
 				catch (Exception $exc)
 				{
 					$this->_subject->setError($exc->getMessage());
-					
+
 					return false;
 				}
 
@@ -111,7 +111,7 @@ class plgUserYubikey extends JPlugin
 		if (!($form instanceof JForm))
 		{
 			$this->_subject->setError('JERROR_NOT_A_FORM');
-			
+
 			return false;
 		}
 
@@ -123,7 +123,7 @@ class plgUserYubikey extends JPlugin
 
 		// Add the registration fields to the form.
 		JForm::addFormPath(dirname(__FILE__) . '/form');
-		
+
 		$form->loadFile('yubikey', false);
 
 		return true;
@@ -160,12 +160,12 @@ class plgUserYubikey extends JPlugin
 						{
 							$v = '';
 						}
-						elseif (strlen($v) > 20)
+						elseif (strlen($v) > 32)
 						{
 							$v = substr($v, 0, -32);
 						}
 					}
-					
+
 					$tuples[] = '(' . $userId . ', ' . $db->quote('yubikey.' . $k) . ', ' . $db->quote($v) . ', ' . $order++ . ')';
 				}
 
