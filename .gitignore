@@ -6,3 +6,5 @@
 /build/tools
 /plugins/*/yubikey/language/en-GB
 /documentation/yubikey-guide.xml~
+/build/templates/release.json
+/build/build.properties

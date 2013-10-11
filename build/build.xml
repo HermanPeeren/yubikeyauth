@@ -1,0 +1,222 @@
+<?xml version="1.0"?>
+<project name="YubiKeyAuthPluginsJoomla" description="YubiKey Authentication PLugins for Joomla!" default="git" >
+	
+	<property file="./build.properties" />
+	
+	<!-- Default properties, set only if not already assigned in the build.properties file -->
+	<property name="dirs.root" value=".." />
+	<property name="dirs.translations" value="../translations" />
+	<property name="dirs.plugins" value="../plugins" />
+	<property name="dirs.release" value="../release" />
+	<property name="version" value="git" />
+
+	<property name="dirs.bin" value="bin" />
+	<property name="dirs.bin.libxml" value="${dirs.bin}/libxml" />
+	<property name="dirs.bin.fop" value="${dirs.bin}/fop" />
+	<property name="dirs.bin.dbxsl" value="${dirs.bin}/dbxsl" />
+	<property name="dirs.bin.release" value="../release" />
+
+	<property name="dirs.documentation" value="../documentation" />
+
+	<taskdef name="zipme" classname="phingext.ZipmeTask" />
+	<taskdef name="lang" classname="phingext.LangTask" />
+	<taskdef name="gitversion" classname="phingext.GitVersionTask" />
+
+	<!--
+	====================================================================================================
+	File sets
+	====================================================================================================
+	-->
+	
+	<fileset dir="${dirs.plugins}/authentication/yubikey" id="auth-yubikey">
+		<include name="**" />
+	</fileset>
+	
+	<fileset dir="${dirs.plugins}/user/yubikey" id="user-yubikey">
+		<include name="**" />
+	</fileset>
+	
+	<!--
+	====================================================================================================
+	Tasks - General
+	====================================================================================================
+	-->
+	
+	<target name="all" description="Makes everything"
+		depends="git,lang,documentation">
+	</target>
+
+	<target name="git" description="Makes only packages, not the documentation"
+		depends="new-release,setup-properties,package">
+	</target>
+
+	<target name="documentation" description="Creates the documentation packages"
+		depends="doc-j-pdf">
+	</target>
+	
+	<target name="new-release" description="Create afresh the release directory">
+		<!-- Create the release directory afresh -->
+		<delete dir="${dirs.release}" quiet="yes" includeemptydirs="true" />
+		<mkdir dir="${dirs.release}" />
+	</target>
+	
+	<target name="setup-properties" description="Set up version and build properties">
+		<!-- Initialize the build.date timestamp -->
+		<tstamp>
+			<format property="build.date" pattern="%Y-%m-%d" />
+		</tstamp>
+
+		<!-- Initialize the version if it's not set -->
+		<if>
+			<equals arg1="${version}" arg2="git" />
+			<then>
+				<gitversion workingcopy="${dirs.root}" propertyname="git.lastrevision" />
+				<property name="version" value="rev${git.lastrevision}" override="true" />
+			</then>
+		</if>
+	</target>
+
+	<!--
+	====================================================================================================
+	Tasks - Joomla! packages
+	====================================================================================================
+	-->
+	
+	<target name="package" description="Package build"
+		depends="new-release,setup-properties">
+		
+		<!-- Copy the CHANGELOG and the license -->
+		<copy file="${dirs.root}/CHANGELOG" tofile="${dirs.release}/CHANGELOG" overwrite="true"></copy>
+		<copy file="${dirs.root}/LICENSE" tofile="${dirs.release}/LICENSE.txt" overwrite="true"></copy>
+		
+		<!-- Copy plugin manifest template files -->
+		<copy file="./templates/plg_authentication_yubikey.xml" tofile="${dirs.plugins}/authentication/yubikey/yubikey.xml" overwrite="true">
+			<filterchain id="standard-tokens">
+				<replacetokens begintoken="##" endtoken="##">
+					<token key="DATE" value="${build.date}" />
+					<token key="VERSION" value="${version}" />
+				</replacetokens>
+			</filterchain>
+		</copy>
+		
+		<copy file="./templates/plg_user_yubikey.xml" tofile="${dirs.plugins}/user/yubikey/yubikey.xml" overwrite="true">
+			<filterchain refid="standard-tokens">
+				<replacetokens begintoken="##" endtoken="##">
+					<token key="DATE" value="${build.date}" />
+					<token key="VERSION" value="${version}" />
+				</replacetokens>
+			</filterchain>
+		</copy>
+
+		<!-- Create the authentication plugin package -->
+		<zipme basedir="${dirs.plugins}/authentication/yubikey" destfile="${dirs.release}/plg_authentication_yubikey.zip" includeemptydirs="true">
+			<fileset refid="auth_yubikey" />
+		</zipme>
+		
+		<!-- Create the user plugin package -->
+		<zipme basedir="${dirs.plugins}/user/yubikey" destfile="${dirs.release}/plg_user_yubikey.zip" includeemptydirs="true">
+			<fileset refid="user_yubikey" />
+		</zipme>
+		
+		<!-- Create the package file -->
+		<copy file="./templates/pkg_yubikey.xml" tofile="${dirs.release}/pkg_yubikey.xml" overwrite="true">
+			<filterchain refid="standard-tokens"/>
+		</copy>
+		
+		<zipme basedir="${dirs.release}" destfile="${dirs.release}/pkg_yubikey-${version}.zip" includeemptydirs="true">
+			<fileset dir="${dirs.release}">
+				<include name="CHANGELOG" />
+				<include name="README.txt" />
+				<include name="*.xml" />
+				<include name="plg_*.zip" />
+			</fileset>
+		</zipme>
+	</target>
+	
+	<!--
+	====================================================================================================
+	Tasks - Documentation
+	====================================================================================================
+	-->
+	
+	<target name="doc-j-pdf" description="Documentation for Joomla! in PDF format">
+		<exec command="xsltproc --nonet --xinclude --novalid --stringparam img.src.path ${dirs.documentation} --stringparam body.start.indent 0 --stringparam variablelist.term.break.after 1 --stringparam variablelist.term.separator &quot;&quot; --stringparam variablelist.max.termlength 12 --stringparam section.autolabel 1 --stringparam toc.section.depth 5 --stringparam fop1.extensions 1 --output ${dirs.bin.release}/yubikey-guide.fo ${dirs.bin.dbxsl}/fo/docbook.xsl ${dirs.documentation}/yubikey-guide.xml" dir="${project.basedir}" />
+		<exec command="fop -fo ${dirs.bin.release}/yubikey-guide.fo -pdf ${dirs.bin.release}/yubikey-guide.pdf" logoutput="true" />
+		<delete file="${dirs.release}/yubikey-guide.fo" quiet="yes" />
+	</target>
+
+	<!--
+	====================================================================================================
+	Tasks - Project management
+	====================================================================================================
+	-->
+
+	<target name="lang" description="Generate and upload language files">
+		<exec command="php ./buildlang.php ${application.startdir}/build.properties ${application.startdir}/.. ${version}" dir="buildlang" passthru="true" />
+	</target>
+	
+	<target name="link" description="Internal linker">
+		<exec command="php ../buildfiles/tools/link.php ${application.startdir}/.." dir="${application.startdir}/.." passthru="true" />
+		<exec command="php ../buildfiles/tools/langlink.php ${application.startdir}/.." dir="${application.startdir}/.." passthru="true" />
+	</target>
+	
+	<target name="relink" description="Project relinker">
+		<exec command="php ../buildfiles/tools/relink.php ${site} ${application.startdir}/.." dir="${application.startdir}/.." passthru="true" />
+	</target>
+	
+	<target name="release" depends="setup-properties" description="Upload the release to AkeebaBackup.com">
+		<copy file="./templates/release.json" tofile="${dirs.root}/release.json" overwrite="true">
+			<filterchain id="standard-tokens">
+				<replacetokens begintoken="##" endtoken="##">
+					<token key="DATE" value="${build.date}" />
+					<token key="VERSION" value="${version}" />
+					<token key="RELEASEDIR" value="${phing.dir}/${dirs.release}" />
+					<token key="REPODIR" value="${phing.dir}/${dirs.root}" />
+				</replacetokens>
+			</filterchain>
+		</copy>
+
+		<exec command="php ${project.basedir}/../../releasemaker/releasemaker/index.php ${project.basedir}/../release.json" dir="${project.basedir}" passthru="true" />
+
+		<delete file="${dirs.root}/release.json" quiet="yes" />
+	</target>
+	
+	<target name="ftpdeploy" depends="git">
+		<gitversion workingcopy="${dirs.root}" propertyname="git.lastrevision" />
+		<!-- Core release -->
+		<echo>Uploading release</echo>
+		<ftpdeploy
+			host="${ftp.host}"
+			port="${ftp.port}"
+			username="${ftp.username}"
+			password="${ftp.password}"
+			dir="${ftp.dir}/yubikey/rev${git.lastrevision}"
+			mode="${ftp.mode}"
+			passive="true"
+			level="debug">
+			<fileset dir="${dirs.root}">
+				<include name="CHANGELOG"/>
+			</fileset>			
+			<fileset dir="${dirs.release}">
+				<include name="pkg_*.zip"/>
+			</fileset>			
+		</ftpdeploy>
+	</target>
+	
+	<target name="docsdeploy" >
+		<echo>Uploading YubiKey Authentication Plugins User Guide</echo>
+		<ftpdeploy
+			host="${ftp.host}"
+			port="${ftp.port}"
+			username="${ftp.username}"
+			password="${ftp.password}"
+			dir="${ftp.dir.docs}/yubikey"
+			mode="${ftp.mode}"
+			passive="true"
+			level="debug">
+			<fileset dir="${dirs.documentation}">
+				<include name="*.xml"/>
+			</fileset>			
+		</ftpdeploy>
+	</target>
+</project>
