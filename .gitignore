@@ -5,6 +5,7 @@
 /build/phingext
 /build/tools
 /plugins/*/yubikey/language/en-GB
+/plugins/*/yubikey/yubikey.xml
 /documentation/yubikey-guide.xml~
 /build/templates/release.json
 /build/build.properties

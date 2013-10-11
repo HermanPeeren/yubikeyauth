@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <extension type="package" version="2.5">
+	<packagename>yubikey</packagename>
 	<name>YubiKey Authentication Plugins for Joomla!</name>
 	<version>##VERSION##</version>
 	<description>A set of plugins to provide YubiKey authentication to Joomla!-powered websites.</description>
@@ -13,7 +14,6 @@
 	<url>https://www.akeebabackup.com/</url>
 	<packager>Akeeba Ltd</packager>
 	<packagerurl>https://www.akeebabackup.com/</packagerurl>
-
 	
 	<files folder="packages">
 		<file type="plugin" id="authyubikey" group="authentication">plg_authentication_yubikey.zip</file>

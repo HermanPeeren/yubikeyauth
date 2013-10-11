@@ -28,11 +28,11 @@
 	====================================================================================================
 	-->
 	
-	<fileset dir="${dirs.plugins}/authentication/yubikey" id="auth-yubikey">
+	<fileset dir="${dirs.plugins}/authentication/yubikey" id="auth_yubikey">
 		<include name="**" />
 	</fileset>
 	
-	<fileset dir="${dirs.plugins}/user/yubikey" id="user-yubikey">
+	<fileset dir="${dirs.plugins}/user/yubikey" id="user_yubikey">
 		<include name="**" />
 	</fileset>
 	
@@ -100,12 +100,7 @@
 		</copy>
 		
 		<copy file="./templates/plg_user_yubikey.xml" tofile="${dirs.plugins}/user/yubikey/yubikey.xml" overwrite="true">
-			<filterchain refid="standard-tokens">
-				<replacetokens begintoken="##" endtoken="##">
-					<token key="DATE" value="${build.date}" />
-					<token key="VERSION" value="${version}" />
-				</replacetokens>
-			</filterchain>
+			<filterchain refid="standard-tokens" />
 		</copy>
 
 		<!-- Create the authentication plugin package -->
@@ -126,11 +121,22 @@
 		<zipme basedir="${dirs.release}" destfile="${dirs.release}/pkg_yubikey-${version}.zip" includeemptydirs="true">
 			<fileset dir="${dirs.release}">
 				<include name="CHANGELOG" />
-				<include name="README.txt" />
+				<include name="LICENSE.txt" />
 				<include name="*.xml" />
+			</fileset>
+		</zipme>
+		
+		<zipme basedir="${dirs.release}" prefix="packages/" destfile="${dirs.release}/pkg_yubikey-${version}.zip" includeemptydirs="true">
+			<fileset dir="${dirs.release}">
 				<include name="plg_*.zip" />
 			</fileset>
 		</zipme>
+		
+		<delete file="${dirs.release}/CHANGELOG" quiet="yes" />
+		<delete file="${dirs.release}/LICENSE.txt" quiet="yes" />
+		<delete file="${dirs.release}/plg_user_yubikey.zip" quiet="yes" />
+		<delete file="${dirs.release}/plg_authentication_yubikey.zip" quiet="yes" />
+		<delete file="${dirs.release}/pkg_yubikey.xml" quiet="yes" />
 	</target>
 	
 	<!--
