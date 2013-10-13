@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<extension type="package" version="2.5">
+<extension type="package" version="2.5" method="upgrade">
 	<packagename>yubikey</packagename>
 	<name>YubiKey Authentication Plugins for Joomla!</name>
 	<version>##VERSION##</version>
@@ -17,6 +17,7 @@
 	
 	<files folder="packages">
 		<file type="plugin" id="authyubikey" group="authentication">plg_authentication_yubikey.zip</file>
+		<file type="plugin" id="tfayubikey" group="twofactorauth">plg_twofactorauth_yubikey.zip</file>
 		<file type="plugin" id="useryubikey" group="user">plg_user_yubikey.zip</file>
 	</files>
 

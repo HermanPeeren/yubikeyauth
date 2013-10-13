@@ -76,10 +76,16 @@
             YubiKey (password authentication disabled for extra
             security)</para>
           </listitem>
+
+          <listitem>
+            <para>Optional two factor authentication plugin (only for Joomla!
+            3.2 or later) - Require your users to enter their username,
+            password AND YubiKey to log in to your site.</para>
+          </listitem>
         </itemizedlist>
 
         <bridgehead>Why should you use YubiKey instead of a username and
-        password</bridgehead>
+        password (one factor authentication)</bridgehead>
 
         <para>The most important security aspect of managing a website is none
         other than logging in to it. The traditional way of authenticating to
@@ -128,6 +134,52 @@
         <emphasis>cannot</emphasis> be stolen (of course such a connection
         would have other security issues, but login credentials theft won't be
         one).</para>
+
+        <bridgehead>Why should I use two factor authentication?</bridgehead>
+
+        <important>
+          <para>Two factor authentication is only available on Joomla! 3.2 or
+          later.</para>
+        </important>
+
+        <para>Two factor authentication is generally considered more secure
+        than one factor authentication. In two factor authentication the users
+        needs to use something they <emphasis>know</emphasis> (username and
+        password) and something they <emphasis>have</emphasis> (YubiKey code).
+        This is more resilient than single factor authentication of any kind.
+        If the user's password is intercepted / stolen / guessed the attacker
+        cannot gain access to the site as they do not have the YubiKey device.
+        Likewise, if the YubiKey device is lost / stolen the attacker cannot
+        gain access to the site as they do not know the username and/or
+        password of the user.</para>
+
+        <para>Even though two factor authentication is supremely secure it is
+        the most inconvenient method: the user has to type their username and
+        password and use the YubiKey. This makes the login process much more
+        time consuming. As it holds true for millennia, security and
+        convenience are at odds. You have to choose one:</para>
+
+        <itemizedlist>
+          <listitem>
+            <para>If convenience is of major importance use single factor
+            authentication. At the very least YubiKey offers much greater
+            security than the typical username/password combination.</para>
+          </listitem>
+
+          <listitem>
+            <para>If security is above all use two factor authentication. It
+            is more bothersome for the users but the security level offered is
+            extremely high.</para>
+          </listitem>
+        </itemizedlist>
+
+        <warning>
+          <para>If you implement two factor authentication make sure that your
+          users do not keep their username / password together with their
+          YubiKey. A good analogy to explain this to them would be urging them
+          to treat the YubiKey as their ATM card and their password as the
+          card's PIN code.</para>
+        </warning>
       </section>
 
       <section xml:id="requirements">
@@ -142,6 +194,12 @@
             <para><trademark>Joomla!</trademark> 2.5.6 or any later 2.5.x
             version; <trademark>Joomla!</trademark> 3.1.0 or any later 3.x
             version.</para>
+
+            <important>
+              <para>The two factor authentication plugin <emphasis
+              role="bold">requires</emphasis> <trademark>Joomla!</trademark>
+              3.2.0 or any later 3.x version.</para>
+            </important>
           </listitem>
 
           <listitem>
@@ -310,11 +368,16 @@
       authentication plugins, as well as how to set them up.</para>
 
       <section xml:id="initial-setup">
-        <title>Initial setup</title>
+        <title>Initial setup - Read me first</title>
 
         <para>After installing the extension package on your site you have to
-        make sure that <emphasis>both</emphasis> following plugins are
-        published on your site:</para>
+        enable the plugins.</para>
+
+        <bridgehead>One factor authentication</bridgehead>
+
+        <para>For <emphasis role="bold">one factor authentication</emphasis>
+        <emphasis>both</emphasis> following plugins are published on your
+        site:</para>
 
         <itemizedlist>
           <listitem>
@@ -338,9 +401,32 @@
         yet logged in and this only happens when the Access is set to
         Public.</para>
 
-        <para>The YubiKey authentication involves a web call from your site's
-        server to the key server (by default: the YubiCo servers). As a result
-        you must make sure that the following conditions are met:</para>
+        <bridgehead>Two factor authentication</bridgehead>
+
+        <important>
+          <para>Two factor authentication is only available on Joomla! 3.2.0
+          or later. Earlier versions of Joomla! lack the support for two
+          factor authentication plugins. While enabling the plugin is
+          possible, it will not do anything at all.</para>
+        </important>
+
+        <para>For two factor authentication the following plugin must be
+        published on your site:</para>
+
+        <itemizedlist>
+          <listitem>
+            <para><guilabel>Two Factor Authentication - YubiKey</guilabel>.
+            This plugin allows you to use your YubiKey for two factor
+            authentication.</para>
+          </listitem>
+        </itemizedlist>
+
+        <bridgehead>System requirements and usage notes</bridgehead>
+
+        <para>In both one and two factor authentication modes, YubiKey
+        authentication involves a web call from your site's server to the key
+        server (by default: the YubiCo servers). As a result you must make
+        sure that the following conditions are met:</para>
 
         <itemizedlist>
           <listitem>
@@ -361,458 +447,501 @@
         <para>If you are not sure please ask your host. They are the only
         people who can definitively tell you if these conditions are met or
         what you can do to meet them.</para>
+
+        <para>The one and two factor authentication modes are separate and
+        independent. You can enable either one alone, or both at the same
+        time. You can even use different YubiKeys for each authentication mode
+        on the same user account. That said, we recommend using only one
+        method per user account (and, if possible, per site), or it becomes
+        extremely confusing for users.</para>
       </section>
 
-      <section xml:id="user-config-and-usage">
-        <title>Per user configuration and typical usage</title>
+      <section xml:id="onefactorauth">
+        <title>One factor authentication (Joomla! 2.5 and 3.x)</title>
 
-        <para>The YubiKey Authentication Plugins allow you to define one
-        YubiKey per user account. You will then be able to log in to your site
-        using this YubiKey instead of your username and password.</para>
+        <section xml:id="ofa-user-config">
+          <title>Per user configuration and typical usage</title>
 
-        <bridgehead>Setting up a YubiKey from the back-end</bridgehead>
+          <para>The YubiKey Authentication Plugins allow you to define one
+          YubiKey per user account. You will then be able to log in to your
+          site using this YubiKey instead of your username and
+          password.</para>
 
-        <para>If you have access to the back-end of the
-        <trademark>Joomla!</trademark> web site you can set up the YubiKey
-        authentication for yourself or any other user of the site. Here's
-        how.</para>
+          <important>
+            <para>Make sure both the <guilabel>Authentication -
+            YubiKey</guilabel> and <guilabel>User - YubiKey</guilabel> plugins
+            are already published.</para>
+          </important>
 
-        <procedure>
-          <step>
-            <para>Click on <guimenu>Users</guimenu>, <guimenuitem>User
-            Manager</guimenuitem> from the top menu.</para>
-          </step>
+          <bridgehead>Setting up a YubiKey from the back-end</bridgehead>
 
-          <step>
-            <para>Click on a username.</para>
-          </step>
+          <para>If you have access to the back-end of the
+          <trademark>Joomla!</trademark> web site you can set up the YubiKey
+          authentication for yourself or any other user of the site. Here's
+          how.</para>
 
-          <step>
-            <para>Find the YubiKey Integration slider (Joomla! 2.5) or tab
-            (Joomla! 3.x) and click on it.</para>
-          </step>
+          <procedure>
+            <step>
+              <para>Click on <guimenu>Users</guimenu>, <guimenuitem>User
+              Manager</guimenuitem> from the top menu.</para>
+            </step>
 
-          <step>
-            <para>In the YubiKey signature area:</para>
+            <step>
+              <para>Click on a username.</para>
+            </step>
+
+            <step>
+              <para>Find the YubiKey Integration slider (Joomla! 2.5) or tab
+              (Joomla! 3.x) and click on it.</para>
+            </step>
+
+            <step>
+              <para>In the YubiKey signature area:</para>
+
+              <itemizedlist>
+                <listitem>
+                  <para>If you have the YubiKey at hand (setting up your user
+                  account): insert the YubiKey in a USB port on your computer,
+                  wait for the LED to light steady green and touch the gold
+                  button.</para>
+                </listitem>
+
+                <listitem>
+                  <para>If you do not have the YubiKey at hand (setting up
+                  another user's account): you need to enter the 12 character
+                  Public Identity of the user's YubiKey. These are the first
+                  12 characters (fixed portion) of the code YubiKey generates
+                  when you touch its gold button. If you're setting up another
+                  user's YubiKey ask him to send you a code generated by
+                  YubiKey and paste it in this box, either verbatim or just
+                  its first 12 characters; our plugin will cut off excess
+                  characters automatically.</para>
+                </listitem>
+              </itemizedlist>
+            </step>
+
+            <step>
+              <para>Click on Save &amp; Close</para>
+            </step>
+          </procedure>
+
+          <bridgehead>Setting up a YubiKey from the front-end</bridgehead>
+
+          <para>This is useful for self-management of Yubikey authentication.
+          You will need to go to your user profile editor page. If there is no
+          link provided by your site's manager you can visit a URL like
+          <uri>http://www.example.com/index.php?option=com_users&amp;view=profile&amp;layout=edit</uri>
+          where <uri>http://www.example.com</uri> is the URL to your
+          site.</para>
+
+          <para>On that page you will see an area called <guilabel>YubiKey
+          integration</guilabel>. Click inside the <guilabel>YubiKey
+          signature</guilabel> text entry field. Insert your YubiKey in your
+          computer's USB port and wait for its LED to light up steady green.
+          Now touch the gold button. The profile is saved automatically with
+          your YubiKey information.</para>
+
+          <note>
+            <para>You will notice that only the first 12 characters of your
+            YubiKey code are stored. This is normal. That's the fixed part of
+            your YubiKey's code, called the "Public Identity" of your YubiKey
+            device. It is used to uniquely identify your own Yubikey among the
+            other YubiKeys out there.</para>
+          </note>
+        </section>
+
+        <section xml:id="ofa-logging-in">
+          <title>Logging in to your site</title>
+
+          <bridgehead>Logging in using a YubiKey, without a
+          username</bridgehead>
+
+          <para>If you have set up a specific YubiKey only on one user account
+          you can use the single factor login without a username
+          method.</para>
+
+          <procedure>
+            <step>
+              <para>In the login area of your site (front-end or back-end)
+              click inside either the username or the password field.</para>
+            </step>
+
+            <step>
+              <para>Insert your YubiKey in your computer's USB port and wait
+              for its LED to light up steady green.</para>
+            </step>
+
+            <step>
+              <para>Now touch the gold button.</para>
+            </step>
+
+            <step>
+              <para>The YubiKey types its code in the field and automatically
+              presses the ENTER key. Our plugin figures out which user is
+              assigned this YubiKey, validates the code against the key server
+              and logs in the user.</para>
+            </step>
+          </procedure>
+
+          <para>This is the simplest way to log in as you don't have to type
+          anything, just touch the YubiKey and you're in!</para>
+
+          <bridgehead>Logging in using a YubiKey instead of a
+          password</bridgehead>
+
+          <para>If you have set up a specific YubiKey in more that one user
+          account the previous method will work erratically as the plugin
+          cannot reliably determine which user it should log in. In this case
+          you can use your YubiKey instead of a password.</para>
+
+          <procedure>
+            <step>
+              <para>In the login area of your site (front-end or back-end)
+              enter your username, then click inside the password
+              field.</para>
+            </step>
+
+            <step>
+              <para>Insert your YubiKey in your computer's USB port and wait
+              for itsLED to light up steady green.</para>
+            </step>
+
+            <step>
+              <para>Now touch the gold button.</para>
+            </step>
+
+            <step>
+              <para>The YubiKey types its code in the field and automatically
+              presses the ENTER key. Our plugin checks that they YubiKey
+              configured for the specified username matches the code generated
+              by your YubiKey, validates the code against the key server and
+              logs in the user.</para>
+            </step>
+          </procedure>
+
+          <para>This is a slightly more bothersome way to log in as you need
+          to type your username before touching the YubiKey.</para>
+        </section>
+
+        <section xml:id="ofa-master-key">
+          <title>Defining a master key</title>
+
+          <important>
+            <para>The master key definition below only applies to one factor
+            authentication. Two factor authentication is not affected by this
+            setting.</para>
+          </important>
+
+          <para>The Authentication - YubiKey plugin has an additional very
+          powerful feature: you can define a "master key", i.e. a YubiKey
+          which allows its owner to log in as any other user on the
+          site.</para>
+
+          <important>
+            <para>With great power comes great responsibility. The person
+            holding this YubiKey can log in as any user on the site, including
+            Super Users. This has obvious security implications: it's just
+            like a hotel's master key; if it's lost all doors are unlocked for
+            the thief. On top of that it comes with a great ethical and legal
+            implication: depending on the nature of the site, being able to
+            log in as an arbitrary user may allow the holder of they key to
+            perform unethical / punishable by law actions, such as reading
+            personal messages.</para>
+
+            <para>The authors of this plugin would like to remind you that we
+            are not to be held liable for the actions of its users, as per the
+            GNU General Public License version 3 terms and conditions. In our
+            view the master key is like a superhero's power: you must use it
+            wisely and with parsimony, for good and not for evil.</para>
+          </important>
+
+          <para>To enable this feature go to your site's back-end and click on
+          <guimenu>Extensions</guimenu>, <guimenuitem>Plug-in
+          Manager</guimenuitem>. Find and edit the <guilabel>Authentication -
+          YubiKey</guilabel> plugin. Under <guilabel>Basic Options</guilabel>
+          you will see the <guilabel>Master key</guilabel> parameter. You need
+          to enter your YubiKey's "Public Identity", i.e. the first, fixed, 12
+          characters of your YubiKey's code. In order to do that, insert your
+          YubiKey in your computer's USB port and wait for its LED to light up
+          steady green. Now touch the gold button. delete everything except
+          the first 12 characters. Then click on Save &amp; Close.</para>
+
+          <para>From that point this YubiKey is a Master Key. In any login
+          form on your site, front-end or back-end, enter the username you
+          want to log in with and click on the password field. Insert your
+          YubiKey in your computer's USB port and wait for itsLED to light up
+          steady green. Now touch the gold button. The plugin verified that
+          the code corresponds to the Master Key, verified the code against
+          they key servers and you are logged in as that user.</para>
+        </section>
+
+        <section xml:id="ofa-custom-keyserver">
+          <title>Using a custom key server</title>
+
+          <important>
+            <para>The custom key server definition below only applies to one
+            factor authentication. Two factor authentication is not affected
+            by this setting.</para>
+          </important>
+
+          <para>There are some use cases where you might not want to validate
+          the YubiKeys against the public YubiKey key servers. For example
+          when you have an Intranet or Extranet which is completely isolated
+          from the public Internet you can of course not use the public key
+          servers. YubiCo, the makers of YubiKey, <link
+          xlink:href="http://www.yubico.com/develop/open-source-software/validation-server/"
+          xmlns:xlink="http://www.w3.org/1999/xlink">provide you with the
+          necessary software</link> to create your own, private key servers
+          ("validation servers" and "key storage modules"). You can, of
+          course, use them with our plugins.</para>
+
+          <para>To enable this feature go to your site's back-end and click on
+          <guimenu>Extensions</guimenu>, <guimenuitem>Plug-in
+          Manager</guimenuitem>. Find and edit the <guilabel>Authentication -
+          YubiKey</guilabel> plugin. Under <guilabel>Basic Options</guilabel>
+          you will see the <guilabel>Custom validation URL</guilabel>
+          parameter. You need to enter your private validation server's fully
+          qualified URL, e.g.
+          <uri>http://www.example.com/mykeyserver/wsapi/2.0/verify</uri>.
+          Please note that you MUST include the <uri>/wsapi/2.0/verify</uri>
+          suffix in the URL. Then click on Save &amp; Close.</para>
+
+          <para>If you want to revert to the public key server please delete
+          the contents of the <guilabel>Custom validation URL</guilabel>
+          field.</para>
+        </section>
+
+        <section xml:id="ofa-tightening-security">
+          <title>Tightening security</title>
+
+          <para>Once you have verified that your YubiKey authentication is
+          working properly it's time to tighten the security of your site's
+          login. This will make sure that adversaries will have a very hard
+          time circumventing the login process of your site, eventually making
+          them to give up or at the very least seek different ways of
+          infiltrating your site (remember that you can never make your site
+          airtight and you can never convince malicious actors to call it
+          quits at all costs).</para>
+
+          <bridgehead>A long password (which is never used)</bridgehead>
+
+          <para>This is the low-tech and safe approach. Once you have YubiKey
+          authentication set up on your site change your password to something
+          ridiculously long and complicated. We would recommend a 64 character
+          password consisting of uppercase and lowercase letters, numbers and
+          special characters. An adversary trying to brute force it would need
+          several million times more time than the age of the Universe. Even
+          if computers get billions of times faster in our lifetime it will
+          still be impractical to brute force ("crack") such a
+          password.</para>
+
+          <para>A great place is generate such a ridiculously complex password
+          is the <link xlink:href="http://strongpasswordgenerator.com/"
+          xmlns:xlink="http://www.w3.org/1999/xlink">Strong Password
+          Generator</link> website. Set the password length to 64, leave the
+          Punctuation checkbox selected and click on <guibutton>Generate
+          strong password</guibutton>. It looks like a long piece of garbage.
+          THAT'S PERFECT! Change your user account's password to that. Note
+          that down in a piece of paper and store it somewhere that nobody
+          will find it. Even better, burn the paper and wash the ashes down
+          with hydrochloric acid (it makes recovery of the burned paper by
+          glycerin impossible). If you are paranoid about security you will
+          never, ever use it to log in to your site: using a password always
+          poses the risk of it being stolen and used by an adversary.</para>
+
+          <bridgehead>Disabling the password authentication
+          altogether</bridgehead>
+
+          <para>This is the equivalent of the nuclear option for your site's
+          login: nobody can login using a regular username and password. The
+          only possible method of logging will be using a YubiKey. The obvious
+          drawback is that creating a new user account can only be performed
+          by a Super User in the back-end of the site and the new user must
+          already have or be given a YubiKey. As you understand this is not a
+          suitable method for public websites where people are supposed to
+          register / subscribe. It is, however, an excellent solution for
+          Intranets, Extranets and public sites where only a limited set of
+          people are supposed to have login access (e.g. a company website or
+          even a blog which uses a third party service for comments).</para>
+
+          <para>In order to do that go to your site's back-end,
+          <guimenu>Extensions</guimenu>, <guimenuitem>Plug-in
+          Manager</guimenuitem>. Filter the plugins by choosing the
+          <option>authentication</option> type. Disable all plugins except the
+          <guilabel>Authentication - YubiKey</guilabel> plugin. That's it.
+          Logging in using a username / password is now impossible. You can
+          type them, they won't be accepted. Your site's login is now
+          restricted to using YubiKeys.</para>
+        </section>
+
+        <section xml:id="ofa-information-for-devs">
+          <title>Information for developers</title>
+
+          <para>If you thought that was all that this set of plugins has to
+          offer, you're wrong. This plugin was created by hardcore Joomla!
+          developers with a knack of providing solutions suitable for other
+          developers.</para>
+
+          <section xml:id="mass-assignment-yubikeys-to-users">
+            <title>Mass assignment of YubiKeys to users</title>
+
+            <important>
+              <para>This only applies to one factor authentication. Two factor
+              authentication is not affected by this.</para>
+            </important>
+
+            <para>If you run a large organisation it is impractical manually
+            assigning YubiKeys to user accounts through the back-end of your
+            site. Most likely you already have a list of YubiKey Public
+            Identities (the fixed 12 character portion of a YubiKey's emitted
+            code) and the matching usernames. You can use this information to
+            mass assign YubiKeys to users.</para>
+
+            <important>
+              <para>In the following paragraphs, when we talk about database
+              table names we use the convention
+              <database>#__sometable</database>. The <database>#__</database>
+              part is called the "metaprefix" and should not be taken
+              literally. Instead, it should be replaced with the common prefix
+              of your site's database tables. You can see that in your site's
+              back-end, <guimenu>Site</guimenu>, <guimenuitem>Global
+              Configuration</guimenuitem>, <guilabel>Server</guilabel> tab, in
+              the <guilabel>Database Tables Prefix</guilabel> field. Let's say
+              that it reads <parameter>abc_</parameter>. This means that
+              <database>#__sometable</database> should become
+              <database>abc_sometable</database>, i.e. replace
+              <database>#__</database> with the prefix,
+              <database>abc_</database> (including the underscore!).</para>
+            </important>
+
+            <para>First you need to match user names to the numeric user IDs
+            used internally by Joomla!. You can do that by looking up the
+            #__users table. The user name is found in the
+            <database>username</database> column and the matching numeric user
+            ID is found in the <database>id</database> column.</para>
+
+            <para>Now you need to assign YubiKeys to user IDs. This happens in
+            the <database>#__user_profile</database> table. You need to create
+            one row per user with the following contents:</para>
+
+            <variablelist>
+              <varlistentry>
+                <term>user_id</term>
+
+                <listitem>
+                  <para>The numeric user ID, e.g. <option>1234</option></para>
+                </listitem>
+              </varlistentry>
+
+              <varlistentry>
+                <term>profile_key</term>
+
+                <listitem>
+                  <para><option>yubikey.publickey</option></para>
+                </listitem>
+              </varlistentry>
+
+              <varlistentry>
+                <term>profile_value</term>
+
+                <listitem>
+                  <para>The user's YubiKey Public Identity, i.e. the first 12
+                  characters of the code that YubiKey emits. For example:
+                  <option>vjvltljtrunh</option></para>
+                </listitem>
+              </varlistentry>
+
+              <varlistentry>
+                <term>ordering</term>
+
+                <listitem>
+                  <para><option>0</option></para>
+                </listitem>
+              </varlistentry>
+            </variablelist>
+
+            <tip>
+              <para>You can use a spreadsheet to manipulate these assignments
+              easily, export the file to CSV and import it to your site's
+              database using phpMyAdmin or a similar database management
+              tool.</para>
+            </tip>
+          </section>
+
+          <section xml:id="programmatic-access-yubikey-auth">
+            <title>Programmatic access to YubiKey authentication from third
+            party applications</title>
+
+            <para>Sometimes you may want to double check the identity of the
+            user at the other end of the Internet connection, especially
+            before performing a potentially dangerous or privileged action.
+            For example, before someone makes a money transfer, delete a
+            record and so on you want to make sure that they really are the
+            person who your site thinks is logged in. How can they not be?
+            It's very likely, for example:</para>
 
             <itemizedlist>
               <listitem>
-                <para>If you have the YubiKey at hand (setting up your user
-                account): insert the YubiKey in a USB port on your computer,
-                wait for the LED to light steady green and touch the gold
-                button.</para>
+                <para>The user leaves his computer unattended while logged in
+                to the site.</para>
               </listitem>
 
               <listitem>
-                <para>If you do not have the YubiKey at hand (setting up
-                another user's account): you need to enter the 12 character
-                Public Identity of the user's YubiKey. These are the first 12
-                characters (fixed portion) of the code YubiKey generates when
-                you touch its gold button. If you're setting up another user's
-                YubiKey ask him to send you a code generated by YubiKey and
-                paste it in this box, either verbatim or just its first 12
-                characters; our plugin will cut off excess characters
-                automatically.</para>
+                <para>The login cookie was stolen (very easy to happen with
+                public WiFi hotspot connections and software like <link
+                xlink:href="http://en.wikipedia.org/wiki/Firesheep"
+                xmlns:xlink="http://www.w3.org/1999/xlink">FireSheep</link> or
+                hardware like the <link
+                xlink:href="http://hakshop.myshopify.com/products/wifi-pineapple"
+                xmlns:xlink="http://www.w3.org/1999/xlink">WiFi
+                Pineapple</link>).</para>
+              </listitem>
+
+              <listitem>
+                <para>The user's computer / device is stolen and he's using
+                the Remember Me feature which automatically logs him back in
+                to the site without asking for a password.</para>
               </listitem>
             </itemizedlist>
-          </step>
 
-          <step>
-            <para>Click on Save &amp; Close</para>
-          </step>
-        </procedure>
+            <para>In those cases the user account is compromised and your site
+            is oblivious to this security issue. The easiest remedy against
+            such an attack vector is to require the user to re-authenticate
+            using a secure method, i.e. using the YubiKey device. From your
+            end, as a developer, you just need to provide a text box which
+            they can click and then touch their YubiKey. This field on your
+            form will contain the YubiKey OTP which you can then check for
+            validity. If it's invalid, or doesn't match the user who is logged
+            in, you must deny the action they attempted to perform.</para>
 
-        <bridgehead>Setting up a YubiKey from the front-end</bridgehead>
+            <para>In order to facilitate this the Authentication - YubiKey
+            plugin has two public methods, accessible via the standard Joomla!
+            plugin API:</para>
 
-        <para>This is useful for self-management of Yubikey authentication.
-        You will need to go to your user profile editor page. If there is no
-        link provided by your site's manager you can visit a URL like
-        <uri>http://www.example.com/index.php?option=com_users&amp;view=profile&amp;layout=edit</uri>
-        where <uri>http://www.example.com</uri> is the URL to your
-        site.</para>
-
-        <para>On that page you will see an area called <guilabel>YubiKey
-        integration</guilabel>. Click inside the <guilabel>YubiKey
-        signature</guilabel> text entry field. Insert your YubiKey in your
-        computer's USB port and wait for its LED to light up steady green. Now
-        touch the gold button. The profile is saved automatically with your
-        YubiKey information.</para>
-
-        <note>
-          <para>You will notice that only the first 12 characters of your
-          YubiKey code are stored. This is normal. That's the fixed part of
-          your YubiKey's code, called the "Public Identity" of your YubiKey
-          device. It is used to uniquely identify your own Yubikey among the
-          other YubiKeys out there.</para>
-        </note>
-
-        <bridgehead>Logging in using a YubiKey, without a
-        username</bridgehead>
-
-        <para>If you have set up a specific YubiKey only on one user account
-        you can use the single factor login without a username method.</para>
-
-        <procedure>
-          <step>
-            <para>In the login area of your site (front-end or back-end) click
-            inside either the username or the password field.</para>
-          </step>
-
-          <step>
-            <para>Insert your YubiKey in your computer's USB port and wait for
-            its LED to light up steady green.</para>
-          </step>
-
-          <step>
-            <para>Now touch the gold button.</para>
-          </step>
-
-          <step>
-            <para>The YubiKey types its code in the field and automatically
-            presses the ENTER key. Our plugin figures out which user is
-            assigned this YubiKey, validates the code against the key server
-            and logs in the user.</para>
-          </step>
-        </procedure>
-
-        <para>This is the simplest way to log in as you don't have to type
-        anything, just touch the YubiKey and you're in!</para>
-
-        <bridgehead>Logging in using a YubiKey instead of a
-        password</bridgehead>
-
-        <para>If you have set up a specific YubiKey in more that one user
-        account the previous method will work erratically as the plugin cannot
-        reliably determine which user it should log in. In this case you can
-        use your YubiKey instead of a password.</para>
-
-        <procedure>
-          <step>
-            <para>In the login area of your site (front-end or back-end) enter
-            your username, then click inside the password field.</para>
-          </step>
-
-          <step>
-            <para>Insert your YubiKey in your computer's USB port and wait for
-            itsLED to light up steady green.</para>
-          </step>
-
-          <step>
-            <para>Now touch the gold button.</para>
-          </step>
-
-          <step>
-            <para>The YubiKey types its code in the field and automatically
-            presses the ENTER key. Our plugin checks that they YubiKey
-            configured for the specified username matches the code generated
-            by your YubiKey, validates the code against the key server and
-            logs in the user.</para>
-          </step>
-        </procedure>
-
-        <para>This is a slightly more bothersome way to log in as you need to
-        type your username before touching the YubiKey.</para>
-      </section>
-
-      <section xml:id="defining-a-master-key">
-        <title>Defining a master key</title>
-
-        <para>The Authentication - YubiKey plugin has an additional very
-        powerful feature: you can define a "master key", i.e. a YubiKey which
-        allows its owner to log in as any other user on the site.</para>
-
-        <important>
-          <para>With great power comes great responsibility. The person
-          holding this YubiKey can log in as any user on the site, including
-          Super Users. This has obvious security implications: it's just like
-          a hotel's master key; if it's lost all doors are unlocked for the
-          thief. On top of that it comes with a great ethical and legal
-          implication: depending on the nature of the site, being able to log
-          in as an arbitrary user may allow the holder of they key to perform
-          unethical / punishable by law actions, such as reading personal
-          messages.</para>
-
-          <para>The authors of this plugin would like to remind you that we
-          are not to be held liable for the actions of its users, as per the
-          GNU General Public License version 3 terms and conditions. In our
-          view the master key is like a superhero's power: you must use it
-          wisely and with parsimony, for good and not for evil.</para>
-        </important>
-
-        <para>To enable this feature go to your site's back-end and click on
-        <guimenu>Extensions</guimenu>, <guimenuitem>Plug-in
-        Manager</guimenuitem>. Find and edit the <guilabel>Authentication -
-        YubiKey</guilabel> plugin. Under <guilabel>Basic Options</guilabel>
-        you will see the <guilabel>Master key</guilabel> parameter. You need
-        to enter your YubiKey's "Public Identity", i.e. the first, fixed, 12
-        characters of your YubiKey's code. In order to do that, insert your
-        YubiKey in your computer's USB port and wait for its LED to light up
-        steady green. Now touch the gold button. delete everything except the
-        first 12 characters. Then click on Save &amp; Close.</para>
-
-        <para>From that point this YubiKey is a Master Key. In any login form
-        on your site, front-end or back-end, enter the username you want to
-        log in with and click on the password field. Insert your YubiKey in
-        your computer's USB port and wait for itsLED to light up steady green.
-        Now touch the gold button. The plugin verified that the code
-        corresponds to the Master Key, verified the code against they key
-        servers and you are logged in as that user.</para>
-      </section>
-
-      <section xml:id="custom-key-server">
-        <title>Using a custom key server</title>
-
-        <para>There are some use cases where you might not want to validate
-        the YubiKeys against the public YubiKey key servers. For example when
-        you have an Intranet or Extranet which is completely isolated from the
-        public Internet you can of course not use the public key servers.
-        YubiCo, the makers of YubiKey, <link
-        xlink:href="http://www.yubico.com/develop/open-source-software/validation-server/"
-        xmlns:xlink="http://www.w3.org/1999/xlink">provide you with the
-        necessary software</link> to create your own, private key servers
-        ("validation servers" and "key storage modules"). You can, of course,
-        use them with our plugins.</para>
-
-        <para>To enable this feature go to your site's back-end and click on
-        <guimenu>Extensions</guimenu>, <guimenuitem>Plug-in
-        Manager</guimenuitem>. Find and edit the <guilabel>Authentication -
-        YubiKey</guilabel> plugin. Under <guilabel>Basic Options</guilabel>
-        you will see the <guilabel>Custom validation URL</guilabel> parameter.
-        You need to enter your private validation server's fully qualified
-        URL, e.g.
-        <uri>http://www.example.com/mykeyserver/wsapi/2.0/verify</uri>. Please
-        note that you MUST include the <uri>/wsapi/2.0/verify</uri> suffix in
-        the URL. Then click on Save &amp; Close.</para>
-
-        <para>If you want to revert to the public key server please delete the
-        contents of the <guilabel>Custom validation URL</guilabel>
-        field.</para>
-      </section>
-
-      <section xml:id="tightening-security">
-        <title>Tightening security</title>
-
-        <para>Once you have verified that your YubiKey authentication is
-        working properly it's time to tighten the security of your site's
-        login. This will make sure that adversaries will have a very hard time
-        circumventing the login process of your site, eventually making them
-        to give up or at the very least seek different ways of infiltrating
-        your site (remember that you can never make your site airtight and you
-        can never convince malicious actors to call it quits at all
-        costs).</para>
-
-        <bridgehead>A long password (which is never used)</bridgehead>
-
-        <para>This is the low-tech and safe approach. Once you have YubiKey
-        authentication set up on your site change your password to something
-        ridiculously long and complicated. We would recommend a 64 character
-        password consisting of uppercase and lowercase letters, numbers and
-        special characters. An adversary trying to brute force it would need
-        several million times more time than the age of the Universe. Even if
-        computers get billions of times faster in our lifetime it will still
-        be impractical to brute force ("crack") such a password.</para>
-
-        <para>A great place is generate such a ridiculously complex password
-        is the <link xlink:href="http://strongpasswordgenerator.com/"
-        xmlns:xlink="http://www.w3.org/1999/xlink">Strong Password
-        Generator</link> website. Set the password length to 64, leave the
-        Punctuation checkbox selected and click on <guibutton>Generate strong
-        password</guibutton>. It looks like a long piece of garbage. THAT'S
-        PERFECT! Change your user account's password to that. Note that down
-        in a piece of paper and store it somewhere that nobody will find it.
-        Even better, burn the paper and wash the ashes down with hydrochloric
-        acid (it makes recovery of the burned paper by glycerin impossible).
-        If you are paranoid about security you will never, ever use it to log
-        in to your site: using a password always poses the risk of it being
-        stolen and used by an adversary.</para>
-
-        <bridgehead>Disabling the password authentication
-        altogether</bridgehead>
-
-        <para>This is the equivalent of the nuclear option for your site's
-        login: nobody can login using a regular username and password. The
-        only possible method of logging will be using a YubiKey. The obvious
-        drawback is that creating a new user account can only be performed by
-        a Super User in the back-end of the site and the new user must already
-        have or be given a YubiKey. As you understand this is not a suitable
-        method for public websites where people are supposed to register /
-        subscribe. It is, however, an excellent solution for Intranets,
-        Extranets and public sites where only a limited set of people are
-        supposed to have login access (e.g. a company website or even a blog
-        which uses a third party service for comments).</para>
-
-        <para>In order to do that go to your site's back-end,
-        <guimenu>Extensions</guimenu>, <guimenuitem>Plug-in
-        Manager</guimenuitem>. Filter the plugins by choosing the
-        <option>authentication</option> type. Disable all plugins except the
-        <guilabel>Authentication - YubiKey</guilabel> plugin. That's it.
-        Logging in using a username / password is now impossible. You can type
-        them, they won't be accepted. Your site's login is now restricted to
-        using YubiKeys.</para>
-      </section>
-
-      <section xml:id="information-for-devs">
-        <title>Information for developers</title>
-
-        <para>If you thought that was all that this set of plugins has to
-        offer, you're wrong. This plugin was created by hardcore Joomla!
-        developers with a knack of providing solutions suitable for other
-        developers.</para>
-
-        <section xml:id="mass-assignment-yubikeys-to-users">
-          <title>Mass assignment of YubiKeys to users</title>
-
-          <para>If you run a large organisation it is impractical manually
-          assigning YubiKeys to user accounts through the back-end of your
-          site. Most likely you already have a list of YubiKey Public
-          Identities (the fixed 12 character portion of a YubiKey's emitted
-          code) and the matching usernames. You can use this information to
-          mass assign YubiKeys to users.</para>
-
-          <important>
-            <para>In the following paragraphs, when we talk about database
-            table names we use the convention
-            <database>#__sometable</database>. The <database>#__</database>
-            part is called the "metaprefix" and should not be taken literally.
-            Instead, it should be replaced with the common prefix of your
-            site's database tables. You can see that in your site's back-end,
-            <guimenu>Site</guimenu>, <guimenuitem>Global
-            Configuration</guimenuitem>, <guilabel>Server</guilabel> tab, in
-            the <guilabel>Database Tables Prefix</guilabel> field. Let's say
-            that it reads <parameter>abc_</parameter>. This means that
-            <database>#__sometable</database> should become
-            <database>abc_sometable</database>, i.e. replace
-            <database>#__</database> with the prefix,
-            <database>abc_</database> (including the underscore!).</para>
-          </important>
-
-          <para>First you need to match user names to the numeric user IDs
-          used internally by Joomla!. You can do that by looking up the
-          #__users table. The user name is found in the
-          <database>username</database> column and the matching numeric user
-          ID is found in the <database>id</database> column.</para>
-
-          <para>Now you need to assign YubiKeys to user IDs. This happens in
-          the <database>#__user_profile</database> table. You need to create
-          one row per user with the following contents:</para>
-
-          <variablelist>
-            <varlistentry>
-              <term>user_id</term>
+            <itemizedlist>
+              <listitem>
+                <para><methodname>onGetUsernameFromYubikeySignature($signature)</methodname>
+                returns the username connected to a YubiKey Public Identity.
+                You can give either a YubiKey OTP (the full code emitted by
+                YubiKey) or a YubiKey Public Identity (the first 12
+                characters) and it will reply with the username this YubiKey
+                is connected to. If it returns an empty string the YubiKey in
+                use is not connected to any user account.</para>
+              </listitem>
 
               <listitem>
-                <para>The numeric user ID, e.g. <option>1234</option></para>
+                <para><methodname>onValidateYubikeyOTP($otp)</methodname>
+                returns a boolean value: true if the provided YubiKey OTP is
+                legitimate and has never been used before, false otherwise. If
+                it returns false you must consider the submitted YubiKey OTP
+                as a fake and deny the action the user attempted to
+                perform.</para>
               </listitem>
-            </varlistentry>
+            </itemizedlist>
 
-            <varlistentry>
-              <term>profile_key</term>
+            <para>A simple implementation would be like this:</para>
 
-              <listitem>
-                <para><option>yubikey.publickey</option></para>
-              </listitem>
-            </varlistentry>
-
-            <varlistentry>
-              <term>profile_value</term>
-
-              <listitem>
-                <para>The user's YubiKey Public Identity, i.e. the first 12
-                characters of the code that YubiKey emits. For example:
-                <option>vjvltljtrunh</option></para>
-              </listitem>
-            </varlistentry>
-
-            <varlistentry>
-              <term>ordering</term>
-
-              <listitem>
-                <para><option>0</option></para>
-              </listitem>
-            </varlistentry>
-          </variablelist>
-
-          <tip>
-            <para>You can use a spreadsheet to manipulate these assignments
-            easily, export the file to CSV and import it to your site's
-            database using phpMyAdmin or a similar database management
-            tool.</para>
-          </tip>
-        </section>
-
-        <section xml:id="programmatic-access-yubikey-auth">
-          <title>Programmatic access to YubiKey authentication from third
-          party applications</title>
-
-          <para>Sometimes you may want to double check the identity of the
-          user at the other end of the Internet connection, especially before
-          performing a potentially dangerous or privileged action. For
-          example, before someone makes a money transfer, delete a record and
-          so on you want to make sure that they really are the person who your
-          site thinks is logged in. How can they not be? It's very likely, for
-          example:</para>
-
-          <itemizedlist>
-            <listitem>
-              <para>The user leaves his computer unattended while logged in to
-              the site.</para>
-            </listitem>
-
-            <listitem>
-              <para>The login cookie was stolen (very easy to happen with
-              public WiFi hotspot connections and software like <link
-              xlink:href="http://en.wikipedia.org/wiki/Firesheep"
-              xmlns:xlink="http://www.w3.org/1999/xlink">FireSheep</link> or
-              hardware like the <link
-              xlink:href="http://hakshop.myshopify.com/products/wifi-pineapple"
-              xmlns:xlink="http://www.w3.org/1999/xlink">WiFi
-              Pineapple</link>).</para>
-            </listitem>
-
-            <listitem>
-              <para>The user's computer / device is stolen and he's using the
-              Remember Me feature which automatically logs him back in to the
-              site without asking for a password.</para>
-            </listitem>
-          </itemizedlist>
-
-          <para>In those cases the user account is compromised and your site
-          is oblivious to this security issue. The easiest remedy against such
-          an attack vector is to require the user to re-authenticate using a
-          secure method, i.e. using the YubiKey device. From your end, as a
-          developer, you just need to provide a text box which they can click
-          and then touch their YubiKey. This field on your form will contain
-          the YubiKey OTP which you can then check for validity. If it's
-          invalid, or doesn't match the user who is logged in, you must deny
-          the action they attempted to perform.</para>
-
-          <para>In order to facilitate this the Authentication - YubiKey
-          plugin has two public methods, accessible via the standard Joomla!
-          plugin API:</para>
-
-          <itemizedlist>
-            <listitem>
-              <para><methodname>onGetUsernameFromYubikeySignature($signature)</methodname>
-              returns the username connected to a YubiKey Public Identity. You
-              can give either a YubiKey OTP (the full code emitted by YubiKey)
-              or a YubiKey Public Identity (the first 12 characters) and it
-              will reply with the username this YubiKey is connected to. If it
-              returns an empty string the YubiKey in use is not connected to
-              any user account.</para>
-            </listitem>
-
-            <listitem>
-              <para><methodname>onValidateYubikeyOTP($otp)</methodname>
-              returns a boolean value: true if the provided YubiKey OTP is
-              legitimate and has never been used before, false otherwise. If
-              it returns false you must consider the submitted YubiKey OTP as
-              a fake and deny the action the user attempted to perform.</para>
-            </listitem>
-          </itemizedlist>
-
-          <para>A simple implementation would be like this:</para>
-
-          <programlisting>function validateYubikey(string $otp)
+            <programlisting>function validateYubikey(string $otp)
 {
     JPluginHelper::importPlugin('authentication');
     $dispatcher = JDispatcher::getInstance();
@@ -830,9 +959,217 @@
     return in_array(true, $plugin_result, true);
 }</programlisting>
 
-          <para>You just pass it the YubiKey OTP which was submitted with the
-          form. If it returns true proceed with the action. If it returns
-          false do not proceed.</para>
+            <para>You just pass it the YubiKey OTP which was submitted with
+            the form. If it returns true proceed with the action. If it
+            returns false do not proceed.</para>
+          </section>
+        </section>
+      </section>
+
+      <section>
+        <title>Two factor authentication (Joomla! 3.2 or later)</title>
+
+        <important>
+          <para>Two factor authentication is only available on
+          <trademark>Joomla!</trademark> 3.2.0 or any later Joomla! 3.x
+          version. Previous versions of Joomla! lack the two factor
+          authentication infrastructure.</para>
+        </important>
+
+        <section xml:id="tfa-per-user-config">
+          <title>Per user configuration</title>
+
+          <para>The YubiKey two factor authentication plugin allows you to
+          define one YubiKey per user account. From that point onwards you
+          will need to use your YubiKey on top of your username and password
+          to log in to your site.</para>
+
+          <important>
+            <para>Make sure the <guilabel>Two Factor Authentication -
+            YubiKey</guilabel> plugin is already published.</para>
+          </important>
+
+          <bridgehead>Setting up a YubiKey from the back-end</bridgehead>
+
+          <para>If you have access to the back-end of the
+          <trademark>Joomla!</trademark> web site you can set up the YubiKey
+          authentication for yourself or any other user of the site. Here's
+          how.</para>
+
+          <procedure>
+            <step>
+              <para>Click on <guimenu>Users</guimenu>, <guimenuitem>User
+              Manager</guimenuitem> from the top menu.</para>
+            </step>
+
+            <step>
+              <para>Click on a username.</para>
+            </step>
+
+            <step>
+              <para>Find the <guilabel>Two Factor Authentication</guilabel>
+              tab and click on it.</para>
+            </step>
+
+            <step>
+              <para>In the <guilabel>Authentication method</guilabel>
+              drop-down select <option>YubiKey</option>.</para>
+            </step>
+
+            <step>
+              <para>Read the instructions on the page.</para>
+
+              <para>You have to click inside the Security Code text box,
+              insert the YubiKey in a USB port on your computer, wait for the
+              LED to light steady green and touch the gold button. Now click
+              the Save button.</para>
+            </step>
+
+            <step>
+              <para>When the page reloads you should no longer see the
+              <guilabel>Security Code</guilabel> text box. Instead, you should
+              see an area called <guilabel>Your YubiKey is already linked to
+              your user account</guilabel> with some text below it, explaining
+              that your YubiKey is linked to your user account.</para>
+            </step>
+
+            <step>
+              <para>Print out the <guilabel>One time emergency
+              passwords</guilabel> and store them to a secure location (e.g. a
+              safe box, your wallet, ...). If you lose your YubiKey you will
+              need to use one of those codes instead of your YubiKey's code to
+              log in to your site and reset the two factor
+              authentication.</para>
+            </step>
+
+            <step>
+              <para>Click on Save &amp; Close</para>
+            </step>
+          </procedure>
+
+          <bridgehead>Setting up a YubiKey from the front-end</bridgehead>
+
+          <para>This is useful for self-management of Yubikey two factor
+          authentication. You will need to go to your user profile editor
+          page. If there is no link provided by your site's manager you can
+          visit a URL like
+          <uri>http://www.example.com/index.php?option=com_users&amp;view=profile&amp;layout=edit</uri>
+          where <uri>http://www.example.com</uri> is the URL to your
+          site.</para>
+
+          <para>On that page you will see an area called <guilabel>Two Factor
+          Authentication</guilabel>. Click inside the <guilabel>Security
+          Code</guilabel> text entry field. Insert your YubiKey in your
+          computer's USB port and wait for its LED to light up steady green.
+          Now touch the gold button. The profile is saved automatically with
+          your YubiKey information.</para>
+
+          <para>After your profile is saved, edit it again. Print out the
+          <guilabel>One time emergency passwords</guilabel> and store them to
+          a secure location (e.g. a safe box, your wallet, ...). If you lose
+          your YubiKey you will need to use one of those codes instead of your
+          YubiKey's code to log in to your site and reset the two factor
+          authentication.</para>
+        </section>
+
+        <section xml:id="tfa-logging-in">
+          <title>Logging in</title>
+
+          <para>When using the two factor authentication method you will need
+          to enter your username and password, as well as use your YubiKey to
+          log in to your site. If any of these is wrong you will be denied
+          login.</para>
+
+          <procedure>
+            <step>
+              <para>In the login area of your site (front-end or back-end)
+              click inside the username field and enter your username.</para>
+            </step>
+
+            <step>
+              <para>Do the same for the password.</para>
+            </step>
+
+            <step>
+              <para>Insert your YubiKey in your computer's USB port and wait
+              for its LED to light up steady green.</para>
+            </step>
+
+            <step>
+              <para>Click inside the Security Code field below the password
+              field.</para>
+            </step>
+
+            <step>
+              <para>Now touch the gold button on your YubiKey.</para>
+            </step>
+
+            <step>
+              <para>The YubiKey types its code in the field and automatically
+              presses the ENTER key, submitting the login form.</para>
+            </step>
+          </procedure>
+
+          <bridgehead>What happens if you lose your YubiKey?</bridgehead>
+
+          <para>Normally this would mean that you would be unable to log in to
+          your site. This is where the "One time emergency passwords" which
+          you printed out when setting up two factor authentication come in
+          handy.</para>
+
+          <procedure>
+            <step>
+              <para>In the login area of your site (front-end or back-end)
+              click inside the username field and enter your username.</para>
+            </step>
+
+            <step>
+              <para>Do the same for the password.</para>
+            </step>
+
+            <step>
+              <para>Click inside the Security Code field below the password
+              field and enter one of the "One time emergency
+              passwords".</para>
+            </step>
+          </procedure>
+
+          <para>Please remember that these are one time emergency passwords.
+          As soon as you log in using one of them it is destroyed: you cannot
+          use it again. We recommend immediately disabling two factor
+          authentication upon logging in to your site with an emergency
+          password. If you run out of emergency passwords you will be unable
+          to log in to your site.</para>
+        </section>
+
+        <section xml:id="tfa-advanced-setup">
+          <title>Advanced setup</title>
+
+          <para>The <guilabel>Two Factor Authentication - YubiKey</guilabel>
+          plugin has the following options:</para>
+
+          <variablelist>
+            <varlistentry>
+              <term>Site Section</term>
+
+              <listitem>
+                <para>You can choose between <option>Site
+                (front-end)</option>, <option>Administrator
+                (back-end)</option> or <option>Both</option>. This determines
+                which section of your site is protected by YubiKey two factor
+                authentication.</para>
+
+                <para>We strongly recommend using Both. If you use
+                Administrator it is possible that an attacker might be able to
+                crack your administrator password by trying a front-end login.
+                While more limited, the front-end still gives the attacker the
+                power to disable two factor authentication, therefore making
+                it possible for him to subsequently enter to your site's
+                back-end. If your objective is strong security you need to use
+                the Both setting in this option.</para>
+              </listitem>
+            </varlistentry>
+          </variablelist>
         </section>
       </section>
     </chapter>
