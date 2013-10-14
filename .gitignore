@@ -9,3 +9,6 @@
 /documentation/yubikey-guide.xml~
 /build/templates/release.json
 /build/build.properties
+/modules/admin/yubikeylogin/mod_yubikeylogin.xml
+/modules/*/language/en-GB
+/modules/admin/yubikeylogin/language/en-GB/

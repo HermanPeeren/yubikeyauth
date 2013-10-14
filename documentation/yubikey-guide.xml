@@ -401,6 +401,16 @@
         yet logged in and this only happens when the Access is set to
         Public.</para>
 
+        <warning>
+          <para>Attention Joomla! 3.2 and later users: the one factor
+          authentication mode bypasses any two factor authentication method
+          you may have set up on your user account. In other words, if you've
+          set up both a YubiKey one factor authentication and a two factor
+          authentication (Google Authenticator, YubiKey, whatever) on your
+          account you will be able to login by providing your YubiKey one
+          factor code, even if your leave blank the Secret Code field.</para>
+        </warning>
+
         <bridgehead>Two factor authentication</bridgehead>
 
         <important>

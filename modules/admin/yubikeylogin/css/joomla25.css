@@ -1,0 +1,5 @@
+.mod-yubikeylogin-row {clear: both;}
+.mod-yubikeylogin-row label { float: left; width: 50%; }
+.mod-yubikeylogin-row input { width: 40%; }
+.mod-yubikeylogin-row select { width: 40%; float: none !important; }
+.mod-yubikeylogin-row img { margin-right: 1px; }
