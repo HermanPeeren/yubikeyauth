@@ -43,7 +43,9 @@
         <para>The YubiKey Authentication Plugins are a set of
         <trademark>Joomla!</trademark> plugins which allow you and your users
         to login to your site securely using the inexpensive and extremely
-        secure YubiKey hardware authentication token.</para>
+        secure YubiKey hardware authentication token. We also include an
+        optional module which makes YubiKey login in the back-end more obvious
+        and easy for the back-end users of your site.</para>
 
         <para>The features of this set of plugins:</para>
 
@@ -81,6 +83,11 @@
             <para>Optional two factor authentication plugin (only for Joomla!
             3.2 or later) - Require your users to enter their username,
             password AND YubiKey to log in to your site.</para>
+          </listitem>
+
+          <listitem>
+            <para>Optional back-end login module (Joomla! 2.5 and 3.x
+            compatible) for easier login using your YubiKey.</para>
           </listitem>
         </itemizedlist>
 
@@ -362,7 +369,7 @@
     </chapter>
 
     <chapter audience="xml:id" xml:id="using">
-      <title>Using the plugins</title>
+      <title>Using the extensions</title>
 
       <para>In this chapter we will explain how to enable the YubiKey
       authentication plugins, as well as how to set them up.</para>
@@ -719,6 +726,96 @@
           <para>If you want to revert to the public key server please delete
           the contents of the <guilabel>Custom validation URL</guilabel>
           field.</para>
+        </section>
+
+        <section xml:id="setting-up-login-module">
+          <title>Setting up the back-end login module</title>
+
+          <warning>
+            <para>This module REQUIRES the one factor YubiKey authentication
+            plugins to be published. If they are not you will not be able to
+            use the default login method (YubiKey) provided in this module. If
+            you decide to unpublish the YubiKey authentication plugins we
+            strongly suggest that you disable this module as well.</para>
+          </warning>
+
+          <tip>
+            <para>The module is compatible with Joomla! 2.5 and 3.x, using a
+            different display template best suited to each Joomla! version.
+            The differences are noted below.</para>
+          </tip>
+
+          <para>The back-end login module shipped with Joomla! is primarily
+          designed for username / password authentication. While this is the
+          most common login method it's also a bit confusing to users who've
+          been told to use their YubiKey to login to their site: Should they
+          type their username and password first? Should they touch the
+          YubiKey in the username or password field? What do you mean it
+          doesn't matter and I can leave the other one blank? These are
+          understandable concerns so we made a back-end login module best
+          suited for YubiKey one factor authentication, while still giving you
+          the option to fall back to the regular username / password
+          authentication if the need arises (e.g. you lost your YubiKey,
+          there's a problem contacting the key servers, etc)</para>
+
+          <bridgehead>Enabling the login module</bridgehead>
+
+          <procedure>
+            <step>
+              <para>Log in to the administrator back-end of your site and go
+              to <guimenu>Extensions</guimenu>, <guimenuitem>Module
+              Manager</guimenuitem>.</para>
+            </step>
+
+            <step>
+              <para>Click the drop-down filter which currently reads
+              <option>Site</option> and click on the
+              <option>Administrator</option> option.</para>
+            </step>
+
+            <step>
+              <para>Click on the <guibutton>New</guibutton> button.</para>
+            </step>
+
+            <step>
+              <para>Click on <option>YubiKey Login Form</option>.</para>
+            </step>
+
+            <step>
+              <para>Set the <guilabel>Title</guilabel> to <option>YubiKey
+              Login</option>.</para>
+            </step>
+
+            <step>
+              <para>In the <guilabel>Position</guilabel> box enter
+              <option>login</option></para>
+            </step>
+
+            <step>
+              <para>Click on <guibutton>Save &amp; Close</guibutton></para>
+            </step>
+
+            <step>
+              <para>Make sure the new <guilabel>YubiKey Login</guilabel>
+              module is published and its <guilabel>Access</guilabel> is set
+              to <option>Public</option>.</para>
+            </step>
+          </procedure>
+
+          <bridgehead>Using the login module</bridgehead>
+
+          <para>When logging in to your site you will only see a single field
+          indicating <guilabel>Touch your YubiKey</guilabel>, with a YubiKey
+          logo next to it. It's already focused (accept input) so just touch
+          your YubiKey to log in.</para>
+
+          <para>If you do not have a YubiKey or for any reason cannot use it
+          to log in you will have to switch back to username / password
+          authentication. On Joomla! 2.5 just click on the <guilabel>Switch to
+          password login</guilabel> link next to the Log In button. On Joomla!
+          3.x just click on the question mark button next to the YubiKey
+          field. In both cases the login form switches to username / password
+          login.</para>
         </section>
 
         <section xml:id="ofa-tightening-security">
