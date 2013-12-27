@@ -1,10 +1,10 @@
 <?php
 /**
- * @package     YubikeyAuthPlugins
- * @subpackage  Twofactorauth.yubikey
+ * @package     Joomla.Plugin
+ * @subpackage  Twofactorauth.totp.tmpl
  *
- * @copyright   Copyright (C) 2013 Akeeba Ltd. All rights reserved.
- * @license     GNU General Public License version 3 or later; see LICENSE.txt
+ * @copyright   Copyright (C) 2005 - 2013 Open Source Matters, Inc. All rights reserved.
+ * @license     GNU General Public License version 2 or later; see LICENSE.txt
  */
 
 defined('_JEXEC') or die;
