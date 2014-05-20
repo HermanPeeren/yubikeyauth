@@ -61,21 +61,47 @@ JFactory::getDocument()->addStyleSheet(JURI::base() . '/modules/mod_yubikeylogin
 </form>
 
 <script lang="javascript">
-	window.addEvent('domready', function () {
-		document.getElementById('form-login').getParent().dispose();
-		document.getElementById('mod-yubikeylogin-password').select();
-		document.getElementById('mod-yubikeylogin-password').focus();
-	});
+	if (window.jQuery)
+	{
+		window.jQuery(document).ready(function(){
+			window.jQuery('#form-login').parent().remove();
+			document.getElementById('mod-yubikeylogin-password').select();
+			document.getElementById('mod-yubikeylogin-password').focus();
+			window.jQuery('#mod-yubikeylogin-password').focus();
+		});
+	}
+	else
+	{
+		window.addEvent('domready', function () {
+			document.getElementById('form-login').getParent().dispose();
+			document.getElementById('mod-yubikeylogin-password').select();
+			document.getElementById('mod-yubikeylogin-password').focus();
+		});
+	}
 
 	function modYubikeyLoginSwitchToPassword()
 	{
-		$('mod-yubikeylogin-switchtopassword').setStyle('display', 'none');
-		$('mod-yubikeylogin-username-field').setStyle('display', 'block');
-		$('mod-yubikeylogin-password-lbl').setStyle('display', 'none');
-		$('mod-yubikeylogin-password-lbl-alt').setStyle('display', 'block');
-		$('mod-yubikeylogin-password-addon-default').setStyle('display', 'none');
-		$('mod-yubikeylogin-password').setProperty('type', 'password');
-		$('mod-yubikeylogin-password').setProperty('placeholder', '<?php echo JText::_('JGLOBAL_PASSWORD') ?>');
+		if (window.jQuery)
+		{
+			window.jQuery('#mod-yubikeylogin-switchtopassword').hide();
+			window.jQuery('#mod-yubikeylogin-username-field').show();
+			window.jQuery('#mod-yubikeylogin-password-lbl').hide();
+			window.jQuery('#mod-yubikeylogin-password-lbl-alt').show();
+			window.jQuery('#mod-yubikeylogin-password-addon-default').hide();
+			window.jQuery('#mod-yubikeylogin-password').attr('type', 'password');
+			window.jQuery('#mod-yubikeylogin-password').attr('placeholder', '<?php echo JText::_('JGLOBAL_PASSWORD') ?>');
+		}
+		else
+		{
+			$('mod-yubikeylogin-switchtopassword').setStyle('display', 'none');
+			$('mod-yubikeylogin-username-field').setStyle('display', 'block');
+			$('mod-yubikeylogin-password-lbl').setStyle('display', 'none');
+			$('mod-yubikeylogin-password-lbl-alt').setStyle('display', 'block');
+			$('mod-yubikeylogin-password-addon-default').setStyle('display', 'none');
+			$('mod-yubikeylogin-password').setProperty('type', 'password');
+			$('mod-yubikeylogin-password').setProperty('placeholder', '<?php echo JText::_('JGLOBAL_PASSWORD') ?>');
+		}
+
 		document.getElementById('mod-yubikeylogin-username').select();
 		document.getElementById('mod-yubikeylogin-username').focus();
 	}
