@@ -116,7 +116,7 @@
 			<filterchain refid="standard-tokens" />
 		</copy>
 		
-		<copy file="./templates/mod_yubikeylogin.xml" tofile="${dirs.modules}}/admin/yubikeylogin/yubikeylogin.xml" overwrite="true">
+		<copy file="./templates/mod_yubikeylogin.xml" tofile="${dirs.modules}/admin/yubikeylogin/yubikeylogin.xml" overwrite="true">
 			<filterchain refid="standard-tokens" />
 		</copy>
 
