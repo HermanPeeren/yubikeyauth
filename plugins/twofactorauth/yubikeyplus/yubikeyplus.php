@@ -15,9 +15,9 @@ defined('_JEXEC') or die;
  * @package     YubikeyAuthPlugins
  * @subpackage  Twofactorauth.yubikey
  */
-class PlgTwofactorauthYubikey extends JPlugin
+class PlgTwofactorauthYubikeyplus extends JPlugin
 {
-	protected $methodName = 'yubikey';
+	protected $methodName = 'yubikeyplus';
 
 	/**
 	 * Constructor
@@ -83,7 +83,7 @@ class PlgTwofactorauthYubikey extends JPlugin
 
 		return (object)array(
 			'method'	=> $this->methodName,
-			'title'		=> JText::_('PLG_TWOFACTORAUTH_YUBIKEY_METHOD_TITLE'),
+			'title'		=> JText::_('PLG_TWOFACTORAUTH_YUBIKEYPLUS_METHOD_TITLE'),
 		);
 	}
 
@@ -107,7 +107,7 @@ class PlgTwofactorauthYubikey extends JPlugin
 		if ($otpConfig->method == $this->methodName)
 		{
 			// This method is already activated. Reuse the same Yubikey ID.
-			$yubikey = $otpConfig->config['yubikey'];
+			$yubikey = $otpConfig->config['yubikeyplus'];
 		}
 		else
 		{
@@ -123,7 +123,7 @@ class PlgTwofactorauthYubikey extends JPlugin
 		@ob_start();
 
 		// Include the form.php from a template override. If none is found use the default.
-		$path = FOFPlatform::getInstance()->getTemplateOverridePath('plg_twofactorauth_yubikey', true);
+		$path = FOFPlatform::getInstance()->getTemplateOverridePath('plg_twofactorauth_yubikeyplus', true);
 
 		JLoader::import('joomla.filesystem.file');
 
@@ -173,7 +173,7 @@ class PlgTwofactorauthYubikey extends JPlugin
 
 		// Load raw data
 		$rawData = $input->get('jform', array(), 'array');
-		$data = $rawData['twofactor']['yubikey'];
+		$data = $rawData['twofactor']['yubikeyplus'];
 
 		// Warn if the securitycode is empty
 		if (array_key_exists('securitycode', $data) && empty($data['securitycode']))
@@ -181,7 +181,7 @@ class PlgTwofactorauthYubikey extends JPlugin
 			try
 			{
 				$app = JFactory::getApplication();
-				$app->enqueueMessage(JText::_('PLG_TWOFACTORAUTH_YUBIKEY_ERR_VALIDATIONFAILED'), 'error');
+				$app->enqueueMessage(JText::_('PLG_TWOFACTORAUTH_YUBIKEYPLUS_ERR_VALIDATIONFAILED'), 'error');
 			}
 			catch (Exception $exc)
 			{
@@ -198,7 +198,7 @@ class PlgTwofactorauthYubikey extends JPlugin
 		if (!$check)
 		{
 			$app = JFactory::getApplication();
-			$app->enqueueMessage(JText::_('PLG_TWOFACTORAUTH_YUBIKEY_ERR_VALIDATIONFAILED'), 'error');
+			$app->enqueueMessage(JText::_('PLG_TWOFACTORAUTH_YUBIKEYPLUS_ERR_VALIDATIONFAILED'), 'error');
 
 			// Check failed. Do not change two factor authentication settings.
 			return false;
@@ -211,7 +211,7 @@ class PlgTwofactorauthYubikey extends JPlugin
 		$otpConfig = (object)array(
 			'method'	=> $this->methodName,
 			'config'	=> array(
-				'yubikey'	=> $yubikey
+				'yubikeyplus'	=> $yubikey
 			),
 			'otep'		=> array()
 		);
@@ -259,7 +259,7 @@ class PlgTwofactorauthYubikey extends JPlugin
 		}
 
 		// Check if the Yubikey starts with the configured Yubikey user string
-		$yubikey_valid = $otpConfig->config['yubikey'];
+		$yubikey_valid = $otpConfig->config['yubikeyplus'];
 		$yubikey = substr($credentials['secretkey'], 0, -32);
 
 		$check = $yubikey == $yubikey_valid;

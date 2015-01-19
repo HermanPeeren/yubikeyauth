@@ -28,23 +28,11 @@
 	File sets
 	====================================================================================================
 	-->
-	
-	<fileset dir="${dirs.plugins}/authentication/yubikey" id="auth_yubikey">
-		<include name="**" />
-	</fileset>
-	
-	<fileset dir="${dirs.plugins}/twofactorauth/yubikey" id="tfa_yubikey">
+
+	<fileset dir="${dirs.plugins}/twofactorauth/yubikeyplus" id="tfa_yubikeyplus">
 		<include name="**" />
 	</fileset>
 
-	<fileset dir="${dirs.plugins}/user/yubikey" id="user_yubikey">
-		<include name="**" />
-	</fileset>
-	
-	<fileset dir="${dirs.modules}/admin/yubikeylogin" id="mod_yubikeylogin">
-		<include name="**" />
-	</fileset>
-	
 	<!--
 	====================================================================================================
 	Tasks - General
@@ -93,13 +81,12 @@
 	
 	<target name="package" description="Package build"
 		depends="new-release,setup-properties">
-		
+
 		<!-- Copy the CHANGELOG and the license -->
-		<copy file="${dirs.root}/CHANGELOG" tofile="${dirs.release}/CHANGELOG" overwrite="true"></copy>
-		<copy file="${dirs.root}/LICENSE" tofile="${dirs.release}/LICENSE.txt" overwrite="true"></copy>
-		
-		<!-- Copy plugin manifest template files -->
-		<copy file="./templates/plg_authentication_yubikey.xml" tofile="${dirs.plugins}/authentication/yubikey/yubikey.xml" overwrite="true">
+		<copy file="${dirs.root}/CHANGELOG" tofile="${dirs.plugins}/twofactorauth/yubikeyplus/CHANGELOG" overwrite="true" />
+		<copy file="${dirs.root}/LICENSE" tofile="${dirs.plugins}/twofactorauth/yubikeyplus/LICENSE.txt" overwrite="true" />
+
+		<copy file="./templates/plg_twofactorauth_yubikeyplus.xml" tofile="${dirs.plugins}/twofactorauth/yubikeyplus/yubikeyplus.xml" overwrite="true">
 			<filterchain id="standard-tokens">
 				<replacetokens begintoken="##" endtoken="##">
 					<token key="DATE" value="${build.date}" />
@@ -107,67 +94,12 @@
 				</replacetokens>
 			</filterchain>
 		</copy>
-		
-		<copy file="./templates/plg_twofactorauth_yubikey.xml" tofile="${dirs.plugins}/twofactorauth/yubikey/yubikey.xml" overwrite="true">
-			<filterchain refid="standard-tokens" />
-		</copy>
 
-		<copy file="./templates/plg_user_yubikey.xml" tofile="${dirs.plugins}/user/yubikey/yubikey.xml" overwrite="true">
-			<filterchain refid="standard-tokens" />
-		</copy>
-		
-		<copy file="./templates/mod_yubikeylogin.xml" tofile="${dirs.modules}/admin/yubikeylogin/yubikeylogin.xml" overwrite="true">
-			<filterchain refid="standard-tokens" />
-		</copy>
-
-		<!-- Create the authentication plugin package -->
-		<zipme basedir="${dirs.plugins}/authentication/yubikey" destfile="${dirs.release}/plg_authentication_yubikey.zip" includeemptydirs="true">
-			<fileset refid="auth_yubikey" />
-		</zipme>
-		
-		<!-- Create the user plugin package -->
-		<zipme basedir="${dirs.plugins}/user/yubikey" destfile="${dirs.release}/plg_user_yubikey.zip" includeemptydirs="true">
-			<fileset refid="user_yubikey" />
-		</zipme>
-		
 		<!-- Create the two factor plugin package -->
-		<zipme basedir="${dirs.plugins}/twofactorauth/yubikey" destfile="${dirs.release}/plg_twofactorauth_yubikey.zip" includeemptydirs="true">
-			<fileset refid="tfa_yubikey" />
+		<zipme basedir="${dirs.plugins}/twofactorauth/yubikeyplus" destfile="${dirs.release}/plg_twofactorauth_yubikeyplus.zip" includeemptydirs="true">
+			<fileset refid="tfa_yubikeyplus" />
 		</zipme>
-		
-		<!-- Create the login module package -->
-		<zipme basedir="${dirs.modules}/admin/yubikeylogin" destfile="${dirs.release}/mod_yubikeylogin.zip" includeemptydirs="true">
-			<fileset refid="mod_yubikeylogin" />
-		</zipme>
-		
-		
-		<!-- Create the package file -->
-		<copy file="./templates/pkg_yubikey.xml" tofile="${dirs.release}/pkg_yubikey.xml" overwrite="true">
-			<filterchain refid="standard-tokens"/>
-		</copy>
-		
-		<zipme basedir="${dirs.release}" destfile="${dirs.release}/pkg_yubikey-${version}.zip" includeemptydirs="true">
-			<fileset dir="${dirs.release}">
-				<include name="CHANGELOG" />
-				<include name="LICENSE.txt" />
-				<include name="*.xml" />
-			</fileset>
-		</zipme>
-		
-		<zipme basedir="${dirs.release}" prefix="packages/" destfile="${dirs.release}/pkg_yubikey-${version}.zip" includeemptydirs="true">
-			<fileset dir="${dirs.release}">
-				<include name="plg_*.zip" />
-				<include name="mod_*.zip" />
-			</fileset>
-		</zipme>
-		
-		<delete file="${dirs.release}/CHANGELOG" quiet="yes" />
-		<delete file="${dirs.release}/LICENSE.txt" quiet="yes" />
-		<delete file="${dirs.release}/mod_yubikeylogin.zip" quiet="yes" />
-		<delete file="${dirs.release}/plg_authentication_yubikey.zip" quiet="yes" />
-		<delete file="${dirs.release}/plg_twofactorauth_yubikey.zip" quiet="yes" />
-		<delete file="${dirs.release}/plg_user_yubikey.zip" quiet="yes" />
-		<delete file="${dirs.release}/pkg_yubikey.xml" quiet="yes" />
+
 	</target>
 	
 	<!--

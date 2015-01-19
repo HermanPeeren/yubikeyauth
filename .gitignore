@@ -4,16 +4,14 @@
 /build/buildlang
 /build/phingext
 /build/tools
-/plugins/*/yubikey/language/en-GB
-/plugins/*/yubikey/yubikey.xml
-/documentation/yubikey-guide.xml~
+/plugins/twofactorauth/yubikeyplus/language/en-GB
+/plugins/twofactorauth/yubikeyplus/yubikeyplus.xml
+/plugins/twofactorauth/yubikeyplus/CHANGELOG
+/plugins/twofactorauth/yubikeyplus/LICENSE.txt
+/documentation/*.xml~
 /build/templates/release.json
 /build/build.properties
-/modules/admin/yubikeylogin/mod_yubikeylogin.xml
-/modules/*/language/en-GB
-/modules/admin/yubikeylogin/language/en-GB
 
 /.idea/workspace.xml
-
 /.idea/cssxfire.xml
 /.idea/yubikeyauth.iml
