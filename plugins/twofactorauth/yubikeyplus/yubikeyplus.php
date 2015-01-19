@@ -3,17 +3,20 @@
  * @package     YubikeyAuthPlugins
  * @subpackage  Twofactorauth.yubikey
  *
- * @copyright   Copyright (C) 2013 Akeeba Ltd. All rights reserved.
+ * @copyright   Copyright (C) 2013-2015 Akeeba Ltd. All rights reserved.
  * @license     GNU General Public License version 3 or later; see LICENSE.txt
  */
 
 defined('_JEXEC') or die;
 
 /**
- * Two Factor Authentication using Yubikey Plugin for Joomla! 3.2 or later
+ * Two Factor Authentication using Yubikey Plugin for Joomla! 3.2 or later.
+ *
+ * This plugin, unlike the plugin shipped with Joomla! 3.2, 3.3 and 3.4, allows you to set up as many YubiKey devices
+ * per user account as you please.
  *
  * @package     YubikeyAuthPlugins
- * @subpackage  Twofactorauth.yubikey
+ * @subpackage  Twofactorauth.yubikeyplus
  */
 class PlgTwofactorauthYubikeyplus extends JPlugin
 {
@@ -107,17 +110,22 @@ class PlgTwofactorauthYubikeyplus extends JPlugin
 		if ($otpConfig->method == $this->methodName)
 		{
 			// This method is already activated. Reuse the same Yubikey ID.
-			$yubikey = $otpConfig->config['yubikeyplus'];
+			$yubikeys = $otpConfig->config['yubikeyplus'];
+
+			if (is_string($yubikeys))
+			{
+				$yubikeys = array($yubikeys);
+			}
 		}
 		else
 		{
 			// This methods is not activated yet. We'll need a Yubikey TOTP to setup this Yubikey.
-			$yubikey = '';
+			$yubikeys = array();
 		}
 
         // Is this a new TOTP setup? If so, we'll have to show the code
         // validation field.
-        $new_totp = $otpConfig->method != $this->methodName;
+        $new_totp = ($otpConfig->method != $this->methodName) || empty($yubikeys);
 
 		// Start output buffering
 		@ob_start();
@@ -175,46 +183,74 @@ class PlgTwofactorauthYubikeyplus extends JPlugin
 		$rawData = $input->get('jform', array(), 'array');
 		$data = $rawData['twofactor']['yubikeyplus'];
 
-		// Warn if the securitycode is empty
-		if (array_key_exists('securitycode', $data) && empty($data['securitycode']))
-		{
-			try
-			{
-				$app = JFactory::getApplication();
-				$app->enqueueMessage(JText::_('PLG_TWOFACTORAUTH_YUBIKEYPLUS_ERR_VALIDATIONFAILED'), 'error');
-			}
-			catch (Exception $exc)
-			{
-				// This only happens when we are in a CLI application. We cannot
-				// enqueue a message, so just do nothing.
-			}
+		// Get the existing OTP configuration
+		/** @var UsersModelUser $model */
+		$model = JModelLegacy::getInstance('User', 'UsersModel');
+		$userId = $input->getInt('id', JFactory::getUser());
+		$otpConfig = $model->getOtpConfig($userId);
 
-			return false;
+		if (!isset($otpConfig->config['yubikeyplus']))
+		{
+			$otpConfig->config['yubikeyplus'] = array();
 		}
 
-		// Validate the Yubikey OTP
-		$check = $this->validateYubikeyOTP($data['securitycode']);
-
-		if (!$check)
+		if (is_string($otpConfig->config['yubikeyplus']))
 		{
-			$app = JFactory::getApplication();
-			$app->enqueueMessage(JText::_('PLG_TWOFACTORAUTH_YUBIKEYPLUS_ERR_VALIDATIONFAILED'), 'error');
-
-			// Check failed. Do not change two factor authentication settings.
-			return false;
+			$otpConfig->config['yubikeyplus'] = array($otpConfig->config['yubikeyplus']);
 		}
 
-		// Remove the last 32 digits and store the rest in the user configuration parameters
-		$yubikey = substr($data['securitycode'], 0, -32);
+		// Do I have to remove keys?
+		if (array_key_exists('remove', $data) && ($otpConfig->method == 'yubikeyplus'))
+		{
+			foreach ($data['remove'] as $key => $code)
+			{
+				if (!in_array($key, $otpConfig->config['yubikeyplus']))
+				{
+					continue;
+				}
 
-		// Check succeedeed; return an OTP configuration object
-		$otpConfig = (object)array(
-			'method'	=> $this->methodName,
-			'config'	=> array(
-				'yubikeyplus'	=> $yubikey
-			),
-			'otep'		=> array()
-		);
+				if ($this->validateYubikeyOTP($code))
+				{
+					$idx = array_search($key, $otpConfig->config['yubikeyplus']);
+					unset ($otpConfig->config['yubikeyplus'][$idx]);
+				}
+			}
+		}
+
+		// Do I have to add keys?
+		if (array_key_exists('securitycode', $data) && !empty($data['securitycode']))
+		{
+			// Validate the Yubikey OTP
+			$check = $this->validateYubikeyOTP($data['securitycode']);
+
+			// If the check failed do not change two factor authentication settings.
+			if (!$check)
+			{
+				try
+				{
+					$app = JFactory::getApplication();
+					$app->enqueueMessage(JText::_('PLG_TWOFACTORAUTH_YUBIKEYPLUS_ERR_VALIDATIONFAILED'), 'error');
+				}
+				catch (Exception $exc)
+				{
+					// This only happens when we are in a CLI application. We cannot
+					// enqueue a message, so just do nothing.
+				}
+
+				return false;
+			}
+
+			$newCode = substr($data['securitycode'], 0, -32);
+
+			$otpConfig->config['yubikeyplus'][] = $newCode;
+			$otpConfig->config['yubikeyplus'] = array_unique($otpConfig->config['yubikeyplus']);
+			$otpConfig->method = $this->methodName;
+
+			if (!isset($otpConfig->otep))
+			{
+				$otpConfig->otep = array();
+			}
+		}
 
 		return $otpConfig;
 	}
@@ -252,6 +288,20 @@ class PlgTwofactorauthYubikeyplus extends JPlugin
 			return false;
 		}
 
+		// Get the list of valid YubiKeys
+		$yubikey_valid = $otpConfig->config['yubikeyplus'];
+
+		if (is_string($yubikey_valid))
+		{
+			$yubikey_valid = array($yubikey_valid);
+		}
+
+		// Whoops! The user has not configure any YubiKeys yet. We have to let them in.
+		if (empty($yubikey_valid))
+		{
+			return false;
+		}
+
 		// Check if there is a security code
 		if (empty($credentials['secretkey']))
 		{
@@ -259,10 +309,19 @@ class PlgTwofactorauthYubikeyplus extends JPlugin
 		}
 
 		// Check if the Yubikey starts with the configured Yubikey user string
-		$yubikey_valid = $otpConfig->config['yubikeyplus'];
 		$yubikey = substr($credentials['secretkey'], 0, -32);
 
-		$check = $yubikey == $yubikey_valid;
+		$check = false;
+
+		foreach ($yubikey_valid as $valid_signature)
+		{
+			if ($yubikey == $valid_signature)
+			{
+				$check = true;
+
+				break;
+			}
+		}
 
 		if ($check)
 		{

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<extension version="3.2" type="plugin" group="twofactorauth" method="upgrade">
+<extension version="3.3" type="plugin" group="twofactorauth" method="upgrade">
 	<name>PLG_TWOFACTORAUTH_YUBIKEYPLUS</name>
 	<author>Akeeba Ltd</author>
 	<creationDate>##DATE##</creationDate>
@@ -10,7 +10,7 @@
 	<version>##VERSION##</version>
 	<description>PLG_TWOFACTORAUTH_YUBIKEYPLUS_XML_DESCRIPTION</description>
 	<files>
-		<filename plugin="yubikey">yubikey.php</filename>
+		<filename plugin="yubikeyplus">yubikeyplus.php</filename>
 		<filename>index.html</filename>
 		<folder>tmpl</folder>
 	</files>
@@ -21,7 +21,6 @@
 	
 	<config>
 		<fields name="params">
-
 			<fieldset name="basic">
 				<field name="section" type="radio"
 					default="3"
