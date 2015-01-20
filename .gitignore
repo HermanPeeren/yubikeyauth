@@ -4,10 +4,10 @@
 /build/buildlang
 /build/phingext
 /build/tools
-/plugins/twofactorauth/yubikeyplus/language/en-GB
-/plugins/twofactorauth/yubikeyplus/yubikeyplus.xml
-/plugins/twofactorauth/yubikeyplus/CHANGELOG
-/plugins/twofactorauth/yubikeyplus/LICENSE.txt
+/plugins/twofactorauth/*/language/en-GB
+/plugins/twofactorauth/*/*.xml
+/plugins/twofactorauth/*/CHANGELOG
+/plugins/twofactorauth/*/LICENSE.txt
 /documentation/*.xml~
 /build/templates/release.json
 /build/build.properties

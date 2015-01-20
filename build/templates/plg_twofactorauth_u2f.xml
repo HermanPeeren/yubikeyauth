@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+<extension version="3.3" type="plugin" group="twofactorauth" method="upgrade">
+	<name>PLG_TWOFACTORAUTH_U2F</name>
+	<author>Akeeba Ltd</author>
+	<creationDate>##DATE##</creationDate>
+	<copyright>Copyright (C) 2013-2015 Akeeba Ltd. All rights reserved.</copyright>
+	<license>GNU General Public License version 3 or later; see LICENSE.txt</license>
+	<authorEmail>nicholas@akeebabackup.com</authorEmail>
+	<authorUrl>www.akeebabackup.com</authorUrl>
+	<version>##VERSION##</version>
+	<description>PLG_TWOFACTORAUTH_U2F_XML_DESCRIPTION</description>
+	<files>
+		<filename plugin="u2f">u2f.php</filename>
+		<filename>index.html</filename>
+		<folder>lib</folder>
+		<folder>tmpl</folder>
+	</files>
+	<languages folder="language">
+		<language tag="en-GB">en-GB/en-GB.plg_twofactorauth_u2f.ini</language>
+		<language tag="en-GB">en-GB/en-GB.plg_twofactorauth_u2f.sys.ini</language>
+	</languages>
+	
+	<config>
+		<fields name="params">
+			<fieldset name="basic">
+				<field name="section" type="radio"
+					default="3"
+					class="btn-group"
+					description="PLG_TWOFACTORAUTH_U2F_SECTION_DESC"
+					label="PLG_TWOFACTORAUTH_U2F_SECTION_LABEL"
+				>
+					<option value="1">PLG_TWOFACTORAUTH_U2F_SECTION_SITE</option>
+					<option value="2">PLG_TWOFACTORAUTH_U2F_SECTION_ADMIN</option>
+					<option value="3">PLG_TWOFACTORAUTH_U2F_SECTION_BOTH</option>
+				</field>
+			</fieldset>
+		</fields>
+	</config>
+</extension>

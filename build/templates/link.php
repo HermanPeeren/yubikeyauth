@@ -17,4 +17,5 @@ $symlink_folders = array(
 
 	# Component translation
 	'translations/plugins/twofactorauth/yubikeyplus/en-GB'	=> 'plugins/twofactorauth/yubikeyplus/language/en-GB',
+	'translations/plugins/twofactorauth/u2f/en-GB'	=> 'plugins/twofactorauth/u2f/language/en-GB',
 );
