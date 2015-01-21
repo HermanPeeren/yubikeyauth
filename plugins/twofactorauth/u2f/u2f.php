@@ -22,6 +22,8 @@ class PlgTwofactorauthU2f extends JPlugin
 	/** @var  u2flib_server\U2F|null  U2F server instance  */
 	protected $u2f = null;
 
+	protected $enabled = false;
+
 	/**
 	 * Constructor
 	 *
@@ -33,6 +35,9 @@ class PlgTwofactorauthU2f extends JPlugin
 	public function __construct(&$subject, $config = array())
 	{
 		parent::__construct($subject, $config);
+
+		// Check OpenSSL version
+		$this->enabled = $this->isOpenSSL10();
 
 		// Load the Joomla! RAD layer
 		if (!defined('FOF_INCLUDED'))
@@ -178,6 +183,11 @@ class PlgTwofactorauthU2f extends JPlugin
 			return false;
 		}
 
+		if (!$this->enabled)
+		{
+			return false;
+		}
+
 		// Get a reference to the input data object
 		$input = JFactory::getApplication()->input;
 
@@ -275,6 +285,8 @@ class PlgTwofactorauthU2f extends JPlugin
 
 		if ($saveKeys)
 		{
+			$otpConfig->config['u2f'] = $userId; // I need to look it up when validating
+
 			$this->saveKeysFor($userId, $u2fKeys);
 		}
 
@@ -314,18 +326,24 @@ class PlgTwofactorauthU2f extends JPlugin
 			return false;
 		}
 
+		// Not a valid OpenSSL version? Sorry, I can't process anything.
+		if (!$this->enabled)
+		{
+			return true;
+		}
+
 		// Get the list of valid YubiKeys
-		$u2f_valid = $otpConfig->config['u2f'];
+		$u2f_valid = $this->getKeysFor($otpConfig->config['u2f']);
 
 		if (!is_array($u2f_valid))
 		{
 			$u2f_valid = array();
 		}
 
-		// Whoops! The user has not configure any YubiKeys yet. We have to let them in.
+		// Whoops! The user has not configure any U2F keys yet. We implicitly accept the request as valid.
 		if (empty($u2f_valid))
 		{
-			return false;
+			return true;
 		}
 
 		// Check if there is a security code
@@ -343,6 +361,13 @@ class PlgTwofactorauthU2f extends JPlugin
 		// TODO AJAX handlers go here
 	}
 
+	/**
+	 * Loads the registered U2F keys for a specific user
+	 *
+	 * @param   int  $userId  The user ID
+	 *
+	 * @return  array
+	 */
 	private function getKeysFor($userId)
 	{
 		$ret = array();
@@ -376,6 +401,14 @@ class PlgTwofactorauthU2f extends JPlugin
 		return $ret;
 	}
 
+	/**
+	 * Save the registered U2F into a user's parameters
+	 *
+	 * @param   int    $userId  The user ID
+	 * @param   array  $keys    The registered keys array
+	 *
+	 * @return  void
+	 */
 	private function saveKeysFor($userId, array $keys)
 	{
 		$key = JFactory::getConfig()->get('secret');
@@ -402,5 +435,34 @@ class PlgTwofactorauthU2f extends JPlugin
 			->set($db->qn('params') . ' = ' . $db->q($params))
 			->where($db->qn('id') . ' = ' . $db->q($userId));
 		$db->setQuery($query)->execute();
+	}
+
+	/**
+	 * Checks if we have OpenSSL 1.0 or later
+	 *
+	 * @return  bool
+	 */
+	private function isOpenSSL10()
+	{
+		// No OpenSSL? No joy.
+		if (!defined('OPENSSL_VERSION_TEXT'))
+		{
+			return false;
+		}
+
+		$parts = explode(' ', OPENSSL_VERSION_TEXT);
+
+		// Not actually OpenSSL? No joy.
+		if (strtoupper($parts[0]) != 'OPENSSL')
+		{
+			return false;
+		}
+
+		// We can't directly use version compare as it doesn't follow PHP version semantics
+		$version = $parts[1];
+		$parts = explode('.', $version, 4);
+		$version = $parts[0] . '.' . $parts[1] . '.' . (int)$parts[2];
+
+		return version_compare($version, '1.0.0', 'ge');
 	}
 }

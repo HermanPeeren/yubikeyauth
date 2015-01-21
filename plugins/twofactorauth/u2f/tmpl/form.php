@@ -34,6 +34,14 @@ JS;
 JFactory::getDocument()->addScript('chrome-extension://pfboblefjcgdjicmnffhdgionmgcdmne/u2f-api.js');
 JFactory::getDocument()->addScriptDeclaration($script);
 ?>
+
+<?php if (!$this->enabled): ?>
+<div class="alert alert-error">
+	<h3><?php echo JText::_('PLG_TWOFACTORAUTH_U2F_ERROR_OPENSSL_TITLE') ?></h3>
+	<p><?php echo JText::_('PLG_TWOFACTORAUTH_U2F_ERROR_OPENSSL_TEXT') ?></p>
+</div>
+<?php return; endif; ?>
+
 <div id="u2f_error_browser" class="alert alert-error" style="display: none">
 	<h3><?php echo JText::_('PLG_TWOFACTORAUTH_U2F_ERROR_BROWSER_TITLE') ?></h3>
 	<p><?php echo JText::_('PLG_TWOFACTORAUTH_U2F_ERROR_BROWSER_TEXT') ?></p>
