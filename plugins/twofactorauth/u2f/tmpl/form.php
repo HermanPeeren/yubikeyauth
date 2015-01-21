@@ -115,7 +115,7 @@ JFactory::getDocument()->addScriptDeclaration($script);
 			Please insert your U2F device. If it has a button and it's flashing, please touch it.
 		</div>
 
-		<input type="text" name="jform[twofactor][u2f][register_response]" id="u2fsecurityregisterresponse" autocomplete="0">
+		<input type="hidden" name="jform[twofactor][u2f][register_response]" id="u2fsecurityregisterresponse" autocomplete="0">
 	</fieldset>
 
 
@@ -146,31 +146,31 @@ JFactory::getDocument()->addScriptDeclaration($script);
 
 				if (data.errorCode == 1)
 				{
-					alert('Other error');
+					alert('<?php echo JText::_('PLG_TWOFACTORAUTH_U2F_ERR_JS_OTHER') ?>');
 				}
 
 				if (data.errorCode == 2)
 				{
-					alert('The request cannot be processed');
+					alert('<?php echo JText::_('PLG_TWOFACTORAUTH_U2F_ERR_JS_CANNOTPROCESS') ?>');
 				}
 
 				if (data.errorCode == 3)
 				{
-					alert('Client configuration not supported');
+					alert('<?php echo JText::_('PLG_TWOFACTORAUTH_U2F_ERR_JS_CLIENTCONFIGNOTSUPPORTED') ?>');
 				}
 
 				if (data.errorCode == 4)
 				{
-					alert('The presented device is not eligible for the request. It is either already registered or it does not know the presented key handle.');
+					alert('<?php echo JText::_('PLG_TWOFACTORAUTH_U2F_ERR_JS_INELIGIBLE') ?>');
 				}
 
 				if (data.errorCode == 5)
 				{
-					alert('Timeout reached before the request could be satisfied');
+					alert('<?php echo JText::_('PLG_TWOFACTORAUTH_U2F_ERR_JS_TIMEOUT') ?>');
 				}
 
 				// Reload the page
-				//window.location = window.location;
+				window.location = window.location;
 			});
 		}
 	</script>

@@ -186,7 +186,7 @@ class PlgTwofactorauthYubikeyplus extends JPlugin
 		// Get the existing OTP configuration
 		/** @var UsersModelUser $model */
 		$model = JModelLegacy::getInstance('User', 'UsersModel');
-		$userId = $input->getInt('id', JFactory::getUser());
+		$userId = $input->getInt('id', JFactory::getUser()->id);
 		$otpConfig = $model->getOtpConfig($userId);
 
 		if (!isset($otpConfig->config['yubikeyplus']))

@@ -119,21 +119,7 @@ class PlgTwofactorauthU2f extends JPlugin
 			return false;
 		}
 
-		if ($otpConfig->method == $this->methodName)
-		{
-			// This method is already activated.
-			$u2fKeys = $otpConfig->config['u2f'];
-
-			if (!is_array($u2fKeys))
-			{
-				$u2fKeys = array();
-			}
-		}
-		else
-		{
-			// This methods is not activated yet.
-			$u2fKeys = array();
-		}
+		$u2fKeys = $this->getKeysFor($user_id);
 
         // Is this a new TOTP setup? If so, we'll have to show the code
         // validation field.
@@ -197,32 +183,47 @@ class PlgTwofactorauthU2f extends JPlugin
 
 		// Load raw data
 		$rawData = $input->get('jform', array(), 'array');
-		$data = $rawData['twofactor']['u2f'];
+		$data = array();
+		$dataUnregister = array();
+
+		if (isset($rawData['twofactor']))
+		{
+			if (isset($rawData['twofactor']['u2f']))
+			{
+				$data = $rawData['twofactor']['u2f'];
+			}
+
+			if (isset($rawData['twofactor']['u2f_unregister']))
+			{
+				$dataUnregister = $rawData['twofactor']['u2f_unregister'];
+			}
+		}
+
 
 		// Get the existing OTP configuration
+		$userId = $input->getInt('id', JFactory::getUser()->id);
+		$u2fKeys = $this->getKeysFor($userId);
+
 		/** @var UsersModelUser $model */
 		$model = JModelLegacy::getInstance('User', 'UsersModel');
-		$userId = $input->getInt('id', JFactory::getUser());
 		$otpConfig = $model->getOtpConfig($userId);
 
-		if (!isset($otpConfig->config['u2f']))
-		{
-			$otpConfig->config['u2f'] = array();
-		}
-
-		if (!is_array($otpConfig->config['u2f']))
-		{
-			$otpConfig->config['u2f'] = array();
-		}
+		$saveKeys = false;
 
 		// Do I have to remove keys?
-		if (array_key_exists('remove', $data) && ($otpConfig->method == 'u2f'))
+		if (!empty($dataUnregister))
 		{
-			foreach ($data['remove'] as $key => $code)
+			$saveKeys = true;
+
+			foreach ($dataUnregister as $key)
 			{
-				// TODO Remove keys
-				$idx = array_search($key, $otpConfig->config['u2f']);
-				unset ($otpConfig->config['u2f'][$idx]);
+				foreach ($u2fKeys as $idx => $keyData)
+				{
+					if ($keyData->keyHandle == $key)
+					{
+						unset($u2fKeys[$idx]);
+					}
+				}
 			}
 		}
 
@@ -257,13 +258,24 @@ class PlgTwofactorauthU2f extends JPlugin
 			$now                          = new DateTime();
 			$registration->dateRegistered = $now->getTimeStamp();
 
-			$otpConfig->config['u2f'][] = $registration;
+			$registration = json_encode($registration);
+			$registration = json_decode($registration);
+
+			$u2fKeys[] = $registration;
+
 			$otpConfig->method = $this->methodName;
 
 			if (!isset($otpConfig->otep))
 			{
 				$otpConfig->otep = array();
 			}
+
+			$saveKeys = true;
+		}
+
+		if ($saveKeys)
+		{
+			$this->saveKeysFor($userId, $u2fKeys);
 		}
 
 		return $otpConfig;
@@ -329,5 +341,66 @@ class PlgTwofactorauthU2f extends JPlugin
 	public function onAfterRender()
 	{
 		// TODO AJAX handlers go here
+	}
+
+	private function getKeysFor($userId)
+	{
+		$ret = array();
+
+		$user = JFactory::getUser($userId);
+
+		if (is_string($user->params))
+		{
+			$user->params = new JRegistry($user->params);
+		}
+
+		$registrations = $user->params->get('u2f_registrations', null);
+
+		if (empty($registrations))
+		{
+			return $ret;
+		}
+
+		$key = JFactory::getConfig()->get('secret');
+		$aes = new FOFEncryptAes($key, 256);
+
+		// Decrypt the data
+		$registrations = $aes->decryptString($registrations);
+
+		// Remove the null padding added during encryption
+		$registrations = rtrim($registrations, "\0");
+
+		// json_decode the result
+		$ret = json_decode($registrations);
+
+		return $ret;
+	}
+
+	private function saveKeysFor($userId, array $keys)
+	{
+		$key = JFactory::getConfig()->get('secret');
+		$aes = new FOFEncryptAes($key, 256);
+
+		$registrations = json_encode($keys);
+		$registrations = $aes->encryptString($registrations);
+
+		$user = JFactory::getUser($userId);
+
+		if (is_string($user->params))
+		{
+			$user->params = new JRegistry($user->params);
+		}
+
+		$user->params->set('u2f_registrations', $registrations);
+
+		// For some reason JUser::save doesn't work for me, so...
+		$params = $user->params->toString('JSON');
+
+		$db = JFactory::getDbo();
+		$query = $db->getQuery(true)
+			->update($db->qn('#__users'))
+			->set($db->qn('params') . ' = ' . $db->q($params))
+			->where($db->qn('id') . ' = ' . $db->q($userId));
+		$db->setQuery($query)->execute();
 	}
 }
