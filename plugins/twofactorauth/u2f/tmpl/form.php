@@ -144,11 +144,14 @@ if ($isSupportedChrome)
 			u2f.register([req], auth, function (data)
 			{
 				console.debug(data);
+
 				if ((data.errorCode === undefined) || (data.errorCode === 0))
 				{
 					window.jQuery('#u2fadd_prompt_container').hide();
 					window.jQuery('#u2fsecurityregisterresponse').val(JSON.stringify(data));
 					Joomla.submitbutton('user.apply');
+
+					return;
 				}
 
 				if (data.errorCode == 1)
