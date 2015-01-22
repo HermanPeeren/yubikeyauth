@@ -15,24 +15,20 @@ $script = <<< JS
 window.jQuery('document').load(function(){
 	if ((chrome === undefined) || (window.u2f === undefined))
 	{
-		window.jQuery('#u2f_interface').hide();
-		if ((chrome === undefined))
-		{
-			window.jQuery('#u2f_error_browser').show();
-		}
-		else
-		{
-			window.jQuery('#u2f_error_extension').show();
-		}
+		window.jQuery('#u2f_error_extension').show();
 	}
 });
 
 var u2fajaxurl = '$ajaxURL';
 JS;
 
+$isSupportedChrome = (JBrowser::getInstance()->getBrowser() == 'chrome') && version_compare(JBrowser::getInstance()->getVersion(), '38.0', 'ge');
 
-JFactory::getDocument()->addScript('chrome-extension://pfboblefjcgdjicmnffhdgionmgcdmne/u2f-api.js');
-JFactory::getDocument()->addScriptDeclaration($script);
+if ($isSupportedChrome)
+{
+	JFactory::getDocument()->addScript('chrome-extension://pfboblefjcgdjicmnffhdgionmgcdmne/u2f-api.js');
+	JFactory::getDocument()->addScriptDeclaration($script);
+}
 ?>
 
 <?php if (!$this->enabled): ?>
@@ -42,10 +38,13 @@ JFactory::getDocument()->addScriptDeclaration($script);
 </div>
 <?php return; endif; ?>
 
-<div id="u2f_error_browser" class="alert alert-error" style="display: none">
+<?php if (!$isSupportedChrome): ?>
+<div id="u2f_error_browser" class="alert alert-error">
 	<h3><?php echo JText::_('PLG_TWOFACTORAUTH_U2F_ERROR_BROWSER_TITLE') ?></h3>
 	<p><?php echo JText::_('PLG_TWOFACTORAUTH_U2F_ERROR_BROWSER_TEXT') ?></p>
 </div>
+<?php return; endif; ?>
+
 <div id="u2f_error_extension" class="alert alert-error" style="display: none">
 	<h3><?php echo JText::_('PLG_TWOFACTORAUTH_U2F_ERROR_EXTENSION_TITLE') ?></h3>
 	<p><?php echo JText::_('PLG_TWOFACTORAUTH_U2F_ERROR_EXTENSION_TEXT') ?></p>
