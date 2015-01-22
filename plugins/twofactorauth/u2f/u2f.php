@@ -19,7 +19,7 @@ class PlgTwofactorauthU2f extends JPlugin
 {
 	protected $methodName = 'u2f';
 
-	/** @var  LibU2F\U2F|null  U2F server instance  */
+	/** @var  LibU2F\U2F|null  U2F server instance */
 	protected $u2f = null;
 
 	protected $enabled = false;
@@ -30,8 +30,8 @@ class PlgTwofactorauthU2f extends JPlugin
 	/**
 	 * Constructor
 	 *
-	 * @param   object  &$subject  The object to observe
-	 * @param   array   $config    An optional associative array of configuration settings.
+	 * @param   object &$subject   The object to observe
+	 * @param   array  $config     An optional associative array of configuration settings.
 	 *                             Recognized key values include 'name', 'group', 'params', 'language'
 	 *                             (this list is not meant to be comprehensive).
 	 */
@@ -111,16 +111,16 @@ class PlgTwofactorauthU2f extends JPlugin
 		}
 
 		return (object)array(
-			'method'	=> $this->methodName,
-			'title'		=> JText::_('PLG_TWOFACTORAUTH_U2F_METHOD_TITLE'),
+			'method' => $this->methodName,
+			'title'  => JText::_('PLG_TWOFACTORAUTH_U2F_METHOD_TITLE'),
 		);
 	}
 
 	/**
 	 * Shows the configuration page for this two factor authentication method.
 	 *
-	 * @param   object   $otpConfig  The two factor auth configuration object
-	 * @param   integer  $user_id    The numeric user ID of the user whose form we'll display
+	 * @param   object  $otpConfig The two factor auth configuration object
+	 * @param   integer $user_id   The numeric user ID of the user whose form we'll display
 	 *
 	 * @see UsersModelUser::getOtpConfig
 	 *
@@ -135,9 +135,9 @@ class PlgTwofactorauthU2f extends JPlugin
 
 		$u2fKeys = $this->getKeysFor($user_id);
 
-        // Is this a new TOTP setup? If so, we'll have to show the code
-        // validation field.
-        $new_totp = ($otpConfig->method != $this->methodName) || empty($u2fKeys);
+		// Is this a new TOTP setup? If so, we'll have to show the code
+		// validation field.
+		$new_totp = ($otpConfig->method != $this->methodName) || empty($u2fKeys);
 
 		// Get a registration request and save it to the session
 		$regData = json_encode($this->u2f->getRegisterData($u2fKeys));
@@ -165,8 +165,8 @@ class PlgTwofactorauthU2f extends JPlugin
 
 		// Return the form contents
 		return array(
-			'method'	=> $this->methodName,
-			'form'		=> $html,
+			'method' => $this->methodName,
+			'form'   => $html,
 		);
 	}
 
@@ -174,11 +174,12 @@ class PlgTwofactorauthU2f extends JPlugin
 	 * The save handler of the two factor configuration method's configuration
 	 * page.
 	 *
-	 * @param   string  $method  The two factor auth method for which we'll show the config page
+	 * @param   string $method The two factor auth method for which we'll show the config page
 	 *
 	 * @see UsersModelUser::setOtpConfig
 	 *
-	 * @return  boolean|stdClass  False if the method doesn't match or we have an error, OTP config object if it succeeds
+	 * @return  boolean|stdClass  False if the method doesn't match or we have an error, OTP config object if it
+	 *                            succeeds
 	 */
 	public function onUserTwofactorApplyConfiguration($method)
 	{
@@ -274,7 +275,7 @@ class PlgTwofactorauthU2f extends JPlugin
 				return false;
 			}
 
-			$now                          = new DateTime();
+			$now = new DateTime();
 			$registration->dateRegistered = $now->getTimeStamp();
 
 			$registration = json_encode($registration);
@@ -306,8 +307,8 @@ class PlgTwofactorauthU2f extends JPlugin
 	 * This method should handle any two factor authentication and report back
 	 * to the subject.
 	 *
-	 * @param   array   $credentials  Array holding the user credentials
-	 * @param   array   $options      Array of extra options
+	 * @param   array $credentials Array holding the user credentials
+	 * @param   array $options     Array of extra options
 	 *
 	 * @return  boolean  True if the user is authorised with this two-factor authentication method
 	 *
@@ -361,14 +362,13 @@ class PlgTwofactorauthU2f extends JPlugin
 		{
 			return false;
 		}
-
 		// TODO Perform the actual check, somehow
 	}
 
 	/**
 	 * Loads the registered U2F keys for a specific user
 	 *
-	 * @param   int  $userId  The user ID
+	 * @param   int $userId The user ID
 	 *
 	 * @return  array
 	 */
@@ -408,8 +408,8 @@ class PlgTwofactorauthU2f extends JPlugin
 	/**
 	 * Save the registered U2F into a user's parameters
 	 *
-	 * @param   int    $userId  The user ID
-	 * @param   array  $keys    The registered keys array
+	 * @param   int   $userId The user ID
+	 * @param   array $keys   The registered keys array
 	 *
 	 * @return  void
 	 */
@@ -521,21 +521,55 @@ function u2f_login_form_attach_handler()
 				url: window.location,
 				dataType: 'text',
 				cache: false,
+				method: 'POST',
 				data: {
 					username: jQuery(loginForm).find("input[name='username']").val(),
-					password: jQuery(loginForm).find("input[name='password']").val().
+					password: jQuery(loginForm).find("input[name='password']").val(),
 					'$token': 1,
 					'_u2f_preauth_check': 1
 				}
-			}).fail(function( jqXHR, textStatus, errorThrown ) {
+			}).fail(function(jqXHR, textStatus, errorThrown) {
+				jQuery.data(loginForm, 'allowSubmit', true);
+				jQuery(loginForm).submit();
+			}).done(function(message, textStatus, jqXHR) {
+				valid_pos = message.indexOf('###');
 
-			}).done(function( data, textStatus, jqXHR ) {
+				if (valid_pos == -1)
+				{
+					jQuery.data(loginForm, 'allowSubmit', true);
+					jQuery(loginForm).submit();
 
+					return;
+				}
+
+				if (valid_pos != 0)
+				{
+					message = message.substr(valid_pos);
+				}
+
+				message = message.substr(3); // Remove triple hash in the beginning
+
+				// Get of rid of junk after the data
+				valid_pos = message.lastIndexOf('###');
+				message = message.substr(0, valid_pos); // Remove triple hash in the end
+
+				try
+				{
+					var data = jQuery.parseJSON(message);
+				}
+				catch (err)
+				{
+					jQuery.data(loginForm, 'allowSubmit', true);
+					jQuery(loginForm).submit();
+
+					return;
+				}
+
+				console.debug(data);
+				// TODO Handle valid message
 			})
 		});
 	});
-
-	console.debug(loginForms);
 }
 
 
@@ -545,6 +579,41 @@ JS;
 
 	public function onAfterRender()
 	{
-		// TODO AJAX handlers go here
+		// If we're not enabled we won't handle U2F logins
+		if (!$this->enabled)
+		{
+			return;
+		}
+
+		// If the user is already logged in there's no need to add the JS override
+		if (!JFactory::getUser()->guest)
+		{
+			return;
+		}
+
+		if (JFactory::getApplication()->input->getInt('_u2f_preauth_check') != 1)
+		{
+			return;
+		}
+
+		if (!JFactory::getSession()->checkToken())
+		{
+			return;
+		}
+
+		// TODO Check username and password (see FOF code). If not auth die.
+
+		// TODO Check if the user has U2F. If not, die
+
+		// TODO Return authentication data, see https://github.com/Yubico/wordpress-u2f/blob/master/u2f.php#L275
+
+		// TODO Modify the file, line 569 onwards to sign the login, see https://github.com/Yubico/wordpress-u2f/blob/master/u2f.php#L340
+
+		// TODO Modify this file line 360 onwards to check the signed auth, see https://github.com/Yubico/wordpress-u2f/blob/master/u2f.php#L292
+
+		// TODO Implement the above notes, kill this dummy line...
+		echo '###{"john": "doe"}###';
+
+		JFactory::getApplication()->close();
 	}
 }
