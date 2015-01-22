@@ -19,10 +19,13 @@ class PlgTwofactorauthU2f extends JPlugin
 {
 	protected $methodName = 'u2f';
 
-	/** @var  u2flib_server\U2F|null  U2F server instance  */
+	/** @var  LibU2F\U2F|null  U2F server instance  */
 	protected $u2f = null;
 
 	protected $enabled = false;
+
+	// TODO: Turn off debug mode before shipping
+	private static $developerModeTurnsOffSecurityAndSanityChecks = true;
 
 	/**
 	 * Constructor
@@ -45,7 +48,7 @@ class PlgTwofactorauthU2f extends JPlugin
 			include_once JPATH_LIBRARIES . '/fof/include.php';
 		}
 
-		if (!class_exists('u2flib_server\\U2F'))
+		if (!class_exists('LibU2F\\U2F'))
 		{
 			require_once __DIR__ . '/lib/U2F.php';
 		}
@@ -53,12 +56,18 @@ class PlgTwofactorauthU2f extends JPlugin
 		$jURI = JURI::getInstance();
 		$appId = $jURI->toString(array('scheme', 'host', 'port'));
 
-		$this->u2f = new u2flib_server\U2F($appId);
+		$this->u2f = new LibU2F\U2F($appId);
+
+		// Debug mode: turn off security and sanity checks
+		if (self::$developerModeTurnsOffSecurityAndSanityChecks)
+		{
+			\LibU2F\U2F::$ignoreSecurityForDebugging = true;
+		}
 
 		// Load the translation files
 		$this->loadLanguage();
 
-		// @TODO Add JS handler code for login forms
+		$this->addJSHandlerForLoginForms();
 	}
 
 	/**
@@ -257,7 +266,7 @@ class PlgTwofactorauthU2f extends JPlugin
 			{
 				$registration = $this->u2f->doRegister($registrationRequest[0], $registerResponse);
 			}
-			catch (\u2flib_server\Error $err)
+			catch (\LibU2F\Error $err)
 			{
 				$app = JFactory::getApplication();
 				$app->enqueueMessage($err->getMessage(), 'error');
@@ -356,11 +365,6 @@ class PlgTwofactorauthU2f extends JPlugin
 		// TODO Perform the actual check, somehow
 	}
 
-	public function onAfterRender()
-	{
-		// TODO AJAX handlers go here
-	}
-
 	/**
 	 * Loads the registered U2F keys for a specific user
 	 *
@@ -444,6 +448,12 @@ class PlgTwofactorauthU2f extends JPlugin
 	 */
 	private function isOpenSSL10()
 	{
+		// Debug mode: ignore all security and sanity checks.
+		if (self::$developerModeTurnsOffSecurityAndSanityChecks)
+		{
+			return true;
+		}
+
 		// No OpenSSL? No joy.
 		if (!defined('OPENSSL_VERSION_TEXT'))
 		{
@@ -464,5 +474,77 @@ class PlgTwofactorauthU2f extends JPlugin
 		$version = $parts[0] . '.' . $parts[1] . '.' . (int)$parts[2];
 
 		return version_compare($version, '1.0.0', 'ge');
+	}
+
+	private function addJSHandlerForLoginForms()
+	{
+		// If we're not enabled we won't handle U2F logins
+		if (!$this->enabled)
+		{
+			return;
+		}
+
+		// If the user is already logged in there's no need to add the JS override
+		if (!JFactory::getUser()->guest)
+		{
+			return;
+		}
+
+		$token = JFactory::getSession()->getFormToken();
+		$js = <<< JS
+setTimeout(u2f_login_form_attach_handler, 500);
+
+function u2f_login_form_attach_handler()
+{
+	var loginForms = jQuery("input[name='secretkey']").closest('form');
+
+	if (!loginForms.length)
+	{
+		return;
+	}
+
+	jQuery.each(loginForms, function(idx, loginForm)
+	{
+		jQuery(loginForm).submit(function(event){
+			var allowSubmit = jQuery.data(loginForm, 'allowSubmit');
+
+			if (!allowSubmit)
+			{
+				event.preventDefault();
+			}
+			else
+			{
+				return true;
+			}
+
+			jQuery.ajax({
+				url: window.location,
+				dataType: 'text',
+				cache: false,
+				data: {
+					username: jQuery(loginForm).find("input[name='username']").val(),
+					password: jQuery(loginForm).find("input[name='password']").val().
+					'$token': 1,
+					'_u2f_preauth_check': 1
+				}
+			}).fail(function( jqXHR, textStatus, errorThrown ) {
+
+			}).done(function( data, textStatus, jqXHR ) {
+
+			})
+		});
+	});
+
+	console.debug(loginForms);
+}
+
+
+JS;
+		JFactory::getDocument()->addScriptDeclaration($js);
+	}
+
+	public function onAfterRender()
+	{
+		// TODO AJAX handlers go here
 	}
 }

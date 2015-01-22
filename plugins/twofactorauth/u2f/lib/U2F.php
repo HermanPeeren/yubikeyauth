@@ -28,7 +28,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-namespace u2flib_server;
+namespace LibU2F;
 
 /** Constant for the version of the u2f protocol */
 const U2F_VERSION = "U2F_V2";
@@ -65,6 +65,8 @@ const PUBKEY_LEN = 65;
 class U2F {
   private $appId;
   private $attestDir;
+
+  public static $ignoreSecurityForDebugging = false;
 
   /**
    * @param string Application id for the running application
@@ -175,6 +177,11 @@ class U2F {
     $dataToVerify .= hash('sha256', $clientData, true);
     $dataToVerify .= $kh;
     $dataToVerify .= $pubKey;
+
+    if (self::$ignoreSecurityForDebugging)
+    {
+      return $registration;
+    }
 
     if(openssl_verify($dataToVerify, $signature, $pemCert, 'sha256') === 1) {
       return $registration;
