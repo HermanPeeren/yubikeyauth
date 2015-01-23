@@ -378,7 +378,7 @@ class PlgTwofactorauthU2f extends JPlugin
 
 		$user = JFactory::getUser($userId);
 
-		if (is_string($user->params))
+		if (!is_object($user->params) || !($user->params instanceof JRegistry))
 		{
 			$user->params = new JRegistry($user->params);
 		}
