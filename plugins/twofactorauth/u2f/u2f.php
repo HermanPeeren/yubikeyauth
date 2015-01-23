@@ -24,8 +24,9 @@ class PlgTwofactorauthU2f extends JPlugin
 
 	protected $enabled = false;
 
-	// TODO: Turn off debug mode before shipping
-	private static $developerModeTurnsOffSecurityAndSanityChecks = true;
+	private $magicParameterToSidestepAuthentication = null;
+
+	private static $developerModeTurnsOffSecurityAndSanityChecks = false;
 
 	/**
 	 * Constructor
@@ -342,6 +343,16 @@ class PlgTwofactorauthU2f extends JPlugin
 			return true;
 		}
 
+		// Required authentication short-circuit to perform the pre-auth step
+		if (
+			isset($credentials['_magic']) &&
+			!empty($this->magicParameterToSidestepAuthentication) &&
+		    $credentials['_magic'] === $this->magicParameterToSidestepAuthentication
+		)
+		{
+			return true;
+		}
+
 		// Get the list of valid YubiKeys
 		$u2f_valid = $this->getKeysFor($otpConfig->config['u2f']);
 
@@ -356,13 +367,52 @@ class PlgTwofactorauthU2f extends JPlugin
 			return true;
 		}
 
-		// Check if there is a security code
-		// TODO That's now how we validate it, right?
-		if (empty($credentials['TODO-FIXME']))
+		// Make sure we have a signature in the request
+		if (!isset($credentials['secretkey']) || empty($credentials['secretkey']))
 		{
+			// No U2F signature found
 			return false;
 		}
-		// TODO Perform the actual check, somehow
+
+		$authenticateResponse = json_decode($credentials['secretkey']);
+
+		if (empty($authenticateResponse))
+		{
+			// Invalid authentication signature response in request
+			return false;
+		}
+
+		// Make sure there is an authentication signature request in the session
+		$authData = JFactory::getSession()->get('authData', null, 'plg_twofactorauth_u2f');
+
+		if (empty($authData))
+		{
+			// No authentication request in session; do not proceed
+			return false;
+		}
+
+		$authData = json_decode($authData);
+
+		if (empty($authData))
+		{
+			// Invalid authentication request in session; do not proceed
+			return false;
+		}
+
+		//echo "<pre>"; var_dump($credentials, $options, $authData, $u2f_valid, $authenticateResponse);
+
+		// Validate the U2F signature
+		try
+		{
+			$this->u2f->doAuthenticate($authData, $u2f_valid, $authenticateResponse);
+		}
+		catch (Exception $e)
+		{
+			echo $e->getMessage();
+			return false;
+		}
+
+		return true;
 	}
 
 	/**
@@ -491,12 +541,14 @@ class PlgTwofactorauthU2f extends JPlugin
 		}
 
 		$token = JFactory::getSession()->getFormToken();
+		$buttonMessage = JText::_('PLG_TWOFACTORAUTH_U2F_MESSAGE_TOUCHBUTTON', true);
 		$js = <<< JS
 setTimeout(u2f_login_form_attach_handler, 500);
 
 function u2f_login_form_attach_handler()
 {
 	var loginForms = jQuery("input[name='secretkey']").closest('form');
+	console.debug(loginForms);
 
 	if (!loginForms.length)
 	{
@@ -565,16 +617,36 @@ function u2f_login_form_attach_handler()
 					return;
 				}
 
-				console.debug(data);
-				// TODO Handle valid message
+				var msgDiv = jQuery(document.createElement('div'))
+					.addClass('alert alert-info')
+					.html('$buttonMessage');
+				jQuery(loginForm).hide();
+				jQuery(loginForm).after(msgDiv);
+
+				u2f.sign(data, function(resp){
+					jQuery(loginForm).find("input[name='secretkey']").val(JSON.stringify(resp));
+				    jQuery.data(loginForm, 'allowSubmit', true);
+					jQuery(loginForm).submit();
+				})
 			})
 		});
 	});
 }
 
-
 JS;
-		JFactory::getDocument()->addScriptDeclaration($js);
+		if (!class_exists('JBrowser'))
+		{
+			JLoader::import('joomla.environment.browser');
+		}
+
+		$isSupportedChrome = (JBrowser::getInstance()->getBrowser() == 'chrome') && version_compare(JBrowser::getInstance()->getVersion(), '38.0', 'ge');
+
+		if ($isSupportedChrome)
+		{
+			JFactory::getDocument()->addScript('chrome-extension://pfboblefjcgdjicmnffhdgionmgcdmne/u2f-api.js');
+			JFactory::getDocument()->addScriptDeclaration($js);
+		}
+
 	}
 
 	public function onAfterRender()
@@ -591,28 +663,75 @@ JS;
 			return;
 		}
 
-		if (JFactory::getApplication()->input->getInt('_u2f_preauth_check') != 1)
+		$input    = JFactory::getApplication()->input;
+
+		if ($input->getInt('_u2f_preauth_check') != 1)
 		{
 			return;
 		}
 
-		if (!JFactory::getSession()->checkToken())
+		if ($input->getInt(JFactory::getSession()->getFormToken(), null) !== 1)
 		{
 			return;
 		}
 
-		// TODO Check username and password (see FOF code). If not auth die.
+		// Check username and password (see FOF code).
+		JLoader::import('joomla.user.authentication');
+		$options = array('remember'		 => false);
+		$authenticate = JAuthentication::getInstance();
 
-		// TODO Check if the user has U2F. If not, die
+		$username = $input->get( 'username', null, 'raw' );
+		$password = $input->get( 'password', null, 'raw' );
 
-		// TODO Return authentication data, see https://github.com/Yubico/wordpress-u2f/blob/master/u2f.php#L275
+		$this->magicParameterToSidestepAuthentication = sha1(JCrypt::genRandomBytes(64));
 
-		// TODO Modify the file, line 569 onwards to sign the login, see https://github.com/Yubico/wordpress-u2f/blob/master/u2f.php#L340
+		$response = $authenticate->authenticate(array(
+			'username' => $username,
+			'password' => $password,
+			'_magic' => $this->magicParameterToSidestepAuthentication
+		), $options);
 
-		// TODO Modify this file line 360 onwards to check the signed auth, see https://github.com/Yubico/wordpress-u2f/blob/master/u2f.php#L292
+		// Could not authenticate user. No op.
+		if ($response->status != JAuthentication::STATUS_SUCCESS)
+		{
+			return;
+		}
 
-		// TODO Implement the above notes, kill this dummy line...
-		echo '###{"john": "doe"}###';
+		// Get the user ID
+		if (!class_exists('JUserHelper', true) && class_exists('JLoader') && method_exists('JLoader', 'import'))
+		{
+			JLoader::import('joomla.user.helper');
+		}
+
+		$authUserId = JUserHelper::getUserId($username);
+
+		// Check if the user has U2F.
+		if (!class_exists('UsersModelUser'))
+		{
+			require_once JPATH_ADMINISTRATOR . '/components/com_users/models/user.php';
+		}
+
+		$userModel = JModelLegacy::getInstance('User', 'UsersModel');
+		$otpConfig = $userModel->getOtpConfig($authUserId);
+
+		if ($otpConfig->method != 'u2f')
+		{
+			return;
+		}
+
+		// Return the U2F authentication data
+		$registrations = $this->getKeysFor($authUserId);
+
+		if (empty($registrations))
+		{
+			return;
+		}
+
+		$authData = $this->u2f->getAuthenticateData($registrations);
+
+		JFactory::getSession()->set('authData', json_encode($authData), 'plg_twofactorauth_u2f');
+
+		echo '###' . json_encode($authData) . '###';
 
 		JFactory::getApplication()->close();
 	}

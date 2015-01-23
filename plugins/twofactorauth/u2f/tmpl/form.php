@@ -22,6 +22,11 @@ window.jQuery('document').load(function(){
 var u2fajaxurl = '$ajaxURL';
 JS;
 
+if (!class_exists('JBrowser'))
+{
+	JLoader::import('joomla.environment.browser');
+}
+
 $isSupportedChrome = (JBrowser::getInstance()->getBrowser() == 'chrome') && version_compare(JBrowser::getInstance()->getVersion(), '38.0', 'ge');
 
 if ($isSupportedChrome)
