@@ -104,6 +104,9 @@
 			<fileset refid="tfa_yubikeyplus" />
 		</zipme>
 
+        <delete file="${dirs.plugins}/twofactorauth/yubikeyplus/CHANGELOG" failonerror="false" quiet="true" />
+        <delete file="${dirs.plugins}/twofactorauth/yubikeyplus/LICENSE.txt" failonerror="false" quiet="true" />
+
 	</target>
 
 	<target name="package-u2f" description="Package build for U2F"
@@ -127,6 +130,8 @@
 			<fileset refid="tfa_u2f" />
 		</zipme>
 
+        <delete file="${dirs.plugins}/twofactorauth/u2f/CHANGELOG" failonerror="false" quiet="true" />
+        <delete file="${dirs.plugins}/twofactorauth/u2f/LICENSE.txt" failonerror="false" quiet="true" />
 	</target>
 
 
