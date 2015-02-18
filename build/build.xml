@@ -33,6 +33,10 @@
 		<include name="**" />
 	</fileset>
 
+	<fileset dir="${dirs.plugins}/twofactorauth/yubikeytotp" id="tfa_yubikeytotp">
+		<include name="**" />
+	</fileset>
+
 	<fileset dir="${dirs.plugins}/twofactorauth/u2f" id="tfa_u2f">
 		<include name="**" />
 	</fileset>
@@ -48,7 +52,7 @@
 	</target>
 
 	<target name="git" description="Makes only packages, not the documentation"
-		depends="new-release,setup-properties,package-yubikeyplus,package-u2f">
+		depends="new-release,setup-properties,package-yubikeyplus,package-yubikeytotp,package-u2f">
 	</target>
 
 	<target name="documentation" description="Creates the documentation packages"
@@ -106,6 +110,32 @@
 
         <delete file="${dirs.plugins}/twofactorauth/yubikeyplus/CHANGELOG" failonerror="false" quiet="true" />
         <delete file="${dirs.plugins}/twofactorauth/yubikeyplus/LICENSE.txt" failonerror="false" quiet="true" />
+
+	</target>
+
+	<target name="package-yubikeytotp" description="Package build for YubiKeyTOTP"
+		depends="new-release,setup-properties">
+
+		<!-- Copy the CHANGELOG and the license -->
+		<copy file="${dirs.root}/CHANGELOG" tofile="${dirs.plugins}/twofactorauth/yubikeytotp/CHANGELOG" overwrite="true" />
+		<copy file="${dirs.root}/LICENSE" tofile="${dirs.plugins}/twofactorauth/yubikeytotp/LICENSE.txt" overwrite="true" />
+
+		<copy file="./templates/plg_twofactorauth_yubikeytotp.xml" tofile="${dirs.plugins}/twofactorauth/yubikeytotp/yubikeytotp.xml" overwrite="true">
+			<filterchain id="standard-tokens">
+				<replacetokens begintoken="##" endtoken="##">
+					<token key="DATE" value="${build.date}" />
+					<token key="VERSION" value="${version}" />
+				</replacetokens>
+			</filterchain>
+		</copy>
+
+		<!-- Create the two factor plugin package -->
+		<zipme basedir="${dirs.plugins}/twofactorauth/yubikeytotp" destfile="${dirs.release}/plg_twofactorauth_yubikeytotp-${version}.zip" includeemptydirs="true">
+			<fileset refid="tfa_yubikeytotp" />
+		</zipme>
+
+        <delete file="${dirs.plugins}/twofactorauth/yubikeytotp/CHANGELOG" failonerror="false" quiet="true" />
+        <delete file="${dirs.plugins}/twofactorauth/yubikeytotp/LICENSE.txt" failonerror="false" quiet="true" />
 
 	</target>
 

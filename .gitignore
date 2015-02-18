@@ -6,6 +6,7 @@
 /build/tools
 /plugins/twofactorauth/u2f/language/en-GB
 /plugins/twofactorauth/yubikeyplus/language/en-GB
+/plugins/twofactorauth/yubikeytotp/language/en-GB
 /plugins/twofactorauth/*/*.xml
 /plugins/twofactorauth/*/CHANGELOG
 /plugins/twofactorauth/*/LICENSE.txt
