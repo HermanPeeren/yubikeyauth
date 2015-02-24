@@ -24,6 +24,8 @@ You also need the following on the browser side:
 
 **EXTREMELY IMPORTANT**: U2F authentication currently only works with desktops, laptops and Chromebooks. It does not work when logging in from smartphones, tablets and other devices which cannot run the desktop version of the Google Chrome browser, or with browsers other than Google Chrome. *If you do not use Google Chrome on a desktop, laptop or Chromebook with the FIDO U2F extension and have enabled the U2F two factor authentication method you will be UNABLE to log in to your site!* This is NOT a bug in our code. It's the result of the current state of U2F support.
 
+**WARNING** You MUST use a domain name which has been registered with a commercial domain name service OR localhost. Your browser will check the IP requesting the U2F authentication against the public DNS records. If these do not match (or if your browser thinks they do not match) it will result in an error message. In short, this means that if you're using custom domain names in your computer's hosts file you will not be able to use U2F. This is a security feature of the U2F standard, not a bug in the plugin.
+
 ## Initial setup
 
 Before using this plugin, you need to enable it. Log in to the backend of your site as a Super User. Go to Extensions, Manage Plugins. Find the "Two Factor Authentication - FIDO U2F (Universal 2nd Factor)" plugin and enable it.
@@ -38,11 +40,27 @@ If there is no link provided by your site's manager to edit your user account yo
 
 Click on the Two Factor Authentication tab. From the Authentication Method drop-down list select "FIDO U2F".
 
-@TODO
+If you have already added another U2F key device, click on the "Add another U2F Key" button. This will display a new button titled "Add a U2F Key". If it's the first device you are adding you can already see the "Add a U2F Key" button. 
+
+Click on the big, green "Add a U2F Key" button. Google Chrome will ask you if you want this site to identify you using security keys. Click on Allow. If your U2F device has an LED and a button it will start flashing. Touch the button. If it has a button but no LED just touch the button. If it has neither an LED nor a button it will be accepted automatically without further action necessary on your part. Afterwards the user profile page will be saved automatically, adding the U2F device to your user account.
+
+If you wish to remove a key you have already defined check the box next to it under the Remove column. Then click on Save or Save & Close button in the toolbar to apply the change. Key removal is performed without any additional confirmation.
+
+You can set up one or more U2F key devices per user account. Presenting any of these keys during the login is sufficient. This feature allows you to have backup U2F devices in case you lose / damage your main device.
 
 ## Logging in
 
-@TODO
+Enter your username and password normally. Leave the Security Key empty. Click on the Log In button. The login area will now display a message that you need to insert your U2F key. Insert your U2F key device in a USB port.
+
+If your U2F device has an LED and a button it will start flashing. Touch the button. If it has a button but no LED just touch the button. If it has neither an LED nor a button it will be accepted automatically without further action necessary on your part. 
+
+As long as you used a U2F device previously added in your user account the log in will proceed normally. If the U2F device was not registered with your user account or if there was a man-in-the-middle attack the login will NOT proceed and result in an error message.  
+
+## What if I am locked out?
+
+
+
+If you inadvertently lock yourself out of your site due to Two Factor Authentication 
 
 ## Advanced setup
 
