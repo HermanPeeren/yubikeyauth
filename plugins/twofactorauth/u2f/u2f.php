@@ -138,7 +138,7 @@ class PlgTwofactorauthU2f extends JPlugin
 
 		// Is this a new TOTP setup? If so, we'll have to show the code
 		// validation field.
-		$new_totp = ($otpConfig->method != $this->methodName) || empty($u2fKeys);
+		$new_totp = ($otpConfig->method != $this->methodName) && empty($u2fKeys);
 
 		// Get a registration request and save it to the session
 		$regData = json_encode($this->u2f->getRegisterData($u2fKeys));
@@ -229,6 +229,11 @@ class PlgTwofactorauthU2f extends JPlugin
 		$model = JModelLegacy::getInstance('User', 'UsersModel');
 		$otpConfig = $model->getOtpConfig($userId);
 
+		if (($otpConfig->method != $this->methodName))
+		{
+			$otpConfig->method = $this->methodName;
+		}
+
 		$saveKeys = false;
 
 		// Do I have to remove keys?
@@ -238,13 +243,17 @@ class PlgTwofactorauthU2f extends JPlugin
 
 			foreach ($dataUnregister as $key)
 			{
+				$temp = array();
+
 				foreach ($u2fKeys as $idx => $keyData)
 				{
-					if ($keyData->keyHandle == $key)
+					if ($keyData->keyHandle != $key)
 					{
-						unset($u2fKeys[$idx]);
+						$temp[] = $keyData;
 					}
 				}
+
+				$u2fKeys = $temp;
 			}
 		}
 
@@ -451,6 +460,11 @@ class PlgTwofactorauthU2f extends JPlugin
 
 		// json_decode the result
 		$ret = json_decode($registrations);
+
+		if (is_object($ret))
+		{
+			$ret = (array)$ret;
+		}
 
 		return $ret;
 	}
