@@ -131,8 +131,6 @@ class PlgTwofactorauthYubikeytotp extends JPlugin
 		if (empty($secret))
 		{
 			$secret = $totp->generateSecret();
-			// TODO For Debug Only
-			$secret = '3LR7ZGIZB7SW56EN';
 		}
 
         // Is this a new TOTP setup? If so, we'll have to show the code
