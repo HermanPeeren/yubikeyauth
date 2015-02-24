@@ -16,6 +16,7 @@ The following are required on your server:
 
 * PHP 5.3.10 or later. Recommended: PHP 5.5.0 or later.
 * Joomla! 3.2.1 or later. Recommended: the latest released Joomla! 3 version.
+* Your server's firewall needs to allow connections over port 443 to the domains `api.yubico.com`, `api2.yubico.com`, `api3.yubico.com`, `api4.yubico.com` and `api5.yubico.com`. These are the service endpoints used to validate your YubiKey codes. If they are not accessible the two factor authentication with YubiKey will fail.
 * The cURL extension for PHP installed and activated.
 
 You also need the following on the browser side:
