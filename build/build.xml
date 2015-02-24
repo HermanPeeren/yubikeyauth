@@ -48,20 +48,16 @@
 	-->
 	
 	<target name="all" description="Makes everything"
-		depends="git,lang,documentation">
+		depends="git,lang">
 	</target>
 
-	<target name="git" description="Makes only packages, not the documentation"
-		depends="new-release,setup-properties,package-yubikeyplus,package-yubikeytotp,package-u2f">
+	<target name="git" description="Makes only packages, not the language packs"
+		depends="new-release,setup-properties,package-all">
 	</target>
 
-	<target name="documentation" description="Creates the documentation packages"
-		depends="doc-j-pdf">
-	</target>
-	
 	<target name="new-release" description="Create afresh the release directory">
 		<!-- Create the release directory afresh -->
-		<delete dir="${dirs.release}" quiet="yes" includeemptydirs="true" />
+		<delete dir="${dirs.release}" quiet="true" includeemptydirs="true" />
 		<mkdir dir="${dirs.release}" />
 	</target>
 	
@@ -86,16 +82,46 @@
 	Tasks - Joomla! packages
 	====================================================================================================
 	-->
+
+    <target name="package-all" description="Creates the pkg package"
+            depends="package-yubikeyplus,package-yubikeytotp,package-u2f">
+        <copy file="./templates/pkg_yubikey_plugins.xml" tofile="${dirs.release}/pkg_yubikey_plugins.xml" overwrite="true">
+            <filterchain>
+                <replacetokens begintoken="##" endtoken="##">
+                    <token key="DATE" value="${build.date}" />
+                    <token key="VERSION" value="${version}" />
+                </replacetokens>
+            </filterchain>
+        </copy>
+
+        <copy file="${dirs.root}/CHANGELOG" tofile="${dirs.release}/CHANGELOG" overwrite="true" />
+        <copy file="${dirs.root}/LICENSE" tofile="${dirs.release}/LICENSE.txt" overwrite="true" />
+
+        <!-- Create the pkg archive -->
+        <zipme basedir="${dirs.release}" destfile="${dirs.release}/pkg_yubikey_plugins-${version}.zip" includeemptydirs="true">
+            <fileset dir="${dirs.release}">
+                <include name="pkg_*.xml" />
+                <include name="CHANGELOG" />
+                <include name="LICENSE.txt" />
+            </fileset>
+        </zipme>
+        <zipme basedir="${dirs.release}" prefix="packages/" destfile="${dirs.release}/pkg_yubikey_plugins-${version}.zip" includeemptydirs="true">
+            <fileset dir="${dirs.release}">
+                <include name="plg_twofactorauth_*.zip" />
+            </fileset>
+        </zipme>
+
+        <delete file="${dirs.release}/CHANGELOG" failonerror="false" quiet="true" />
+        <delete file="${dirs.release}/LICENSE.txt" failonerror="false" quiet="true" />
+        <delete file="${dirs.release}/pkg_yubikey_plugins.xml" failonerror="false" quiet="true" />
+
+    </target>
 	
 	<target name="package-yubikeyplus" description="Package build for YubiKeyPlus"
 		depends="new-release,setup-properties">
 
-		<!-- Copy the CHANGELOG and the license -->
-		<copy file="${dirs.root}/CHANGELOG" tofile="${dirs.plugins}/twofactorauth/yubikeyplus/CHANGELOG" overwrite="true" />
-		<copy file="${dirs.root}/LICENSE" tofile="${dirs.plugins}/twofactorauth/yubikeyplus/LICENSE.txt" overwrite="true" />
-
 		<copy file="./templates/plg_twofactorauth_yubikeyplus.xml" tofile="${dirs.plugins}/twofactorauth/yubikeyplus/yubikeyplus.xml" overwrite="true">
-			<filterchain id="standard-tokens">
+			<filterchain>
 				<replacetokens begintoken="##" endtoken="##">
 					<token key="DATE" value="${build.date}" />
 					<token key="VERSION" value="${version}" />
@@ -108,20 +134,13 @@
 			<fileset refid="tfa_yubikeyplus" />
 		</zipme>
 
-        <delete file="${dirs.plugins}/twofactorauth/yubikeyplus/CHANGELOG" failonerror="false" quiet="true" />
-        <delete file="${dirs.plugins}/twofactorauth/yubikeyplus/LICENSE.txt" failonerror="false" quiet="true" />
-
 	</target>
 
 	<target name="package-yubikeytotp" description="Package build for YubiKeyTOTP"
 		depends="new-release,setup-properties">
 
-		<!-- Copy the CHANGELOG and the license -->
-		<copy file="${dirs.root}/CHANGELOG" tofile="${dirs.plugins}/twofactorauth/yubikeytotp/CHANGELOG" overwrite="true" />
-		<copy file="${dirs.root}/LICENSE" tofile="${dirs.plugins}/twofactorauth/yubikeytotp/LICENSE.txt" overwrite="true" />
-
 		<copy file="./templates/plg_twofactorauth_yubikeytotp.xml" tofile="${dirs.plugins}/twofactorauth/yubikeytotp/yubikeytotp.xml" overwrite="true">
-			<filterchain id="standard-tokens">
+			<filterchain>
 				<replacetokens begintoken="##" endtoken="##">
 					<token key="DATE" value="${build.date}" />
 					<token key="VERSION" value="${version}" />
@@ -134,20 +153,13 @@
 			<fileset refid="tfa_yubikeytotp" />
 		</zipme>
 
-        <delete file="${dirs.plugins}/twofactorauth/yubikeytotp/CHANGELOG" failonerror="false" quiet="true" />
-        <delete file="${dirs.plugins}/twofactorauth/yubikeytotp/LICENSE.txt" failonerror="false" quiet="true" />
-
 	</target>
 
 	<target name="package-u2f" description="Package build for U2F"
 			depends="new-release,setup-properties">
 
-		<!-- Copy the CHANGELOG and the license -->
-		<copy file="${dirs.root}/CHANGELOG" tofile="${dirs.plugins}/twofactorauth/u2f/CHANGELOG" overwrite="true" />
-		<copy file="${dirs.root}/LICENSE" tofile="${dirs.plugins}/twofactorauth/u2f/LICENSE.txt" overwrite="true" />
-
 		<copy file="./templates/plg_twofactorauth_u2f.xml" tofile="${dirs.plugins}/twofactorauth/u2f/u2f.xml" overwrite="true">
-			<filterchain id="standard-tokens">
+			<filterchain>
 				<replacetokens begintoken="##" endtoken="##">
 					<token key="DATE" value="${build.date}" />
 					<token key="VERSION" value="${version}" />
@@ -159,23 +171,8 @@
 		<zipme basedir="${dirs.plugins}/twofactorauth/u2f" destfile="${dirs.release}/plg_twofactorauth_u2f-${version}.zip" includeemptydirs="true">
 			<fileset refid="tfa_u2f" />
 		</zipme>
-
-        <delete file="${dirs.plugins}/twofactorauth/u2f/CHANGELOG" failonerror="false" quiet="true" />
-        <delete file="${dirs.plugins}/twofactorauth/u2f/LICENSE.txt" failonerror="false" quiet="true" />
 	</target>
 
-
-	<!--
-	====================================================================================================
-	Tasks - Documentation
-	====================================================================================================
-	-->
-	
-	<target name="doc-j-pdf" description="Documentation for Joomla! in PDF format">
-		<exec command="xsltproc --nonet --xinclude --novalid --stringparam body.start.indent 0 --stringparam variablelist.term.break.after 1 --stringparam variablelist.term.separator &quot;&quot; --stringparam variablelist.max.termlength 12 --stringparam section.autolabel 1 --stringparam toc.section.depth 5 --stringparam fop1.extensions 1 --output ${dirs.bin.release}/yubikey-guide.fo ${dirs.bin.dbxsl}/fo/docbook.xsl ${dirs.documentation}/yubikey-guide.xml" dir="${project.basedir}" />
-		<exec command="${dirs.bin.fop}/fop -fo ${dirs.bin.release}/yubikey-guide.fo -pdf ${dirs.bin.release}/yubikey-guide.pdf" logoutput="true" />
-		<delete file="${dirs.release}/yubikey-guide.fo" quiet="yes" />
-	</target>
 
 	<!--
 	====================================================================================================
@@ -198,7 +195,7 @@
 	
 	<target name="release" depends="setup-properties" description="Upload the release to AkeebaBackup.com">
 		<copy file="./templates/release.json" tofile="${dirs.root}/release.json" overwrite="true">
-			<filterchain id="standard-tokens">
+			<filterchain>
 				<replacetokens begintoken="##" endtoken="##">
 					<token key="DATE" value="${build.date}" />
 					<token key="VERSION" value="${version}" />
@@ -210,7 +207,7 @@
 
 		<exec command="php ${project.basedir}/../../releasemaker/releasemaker/index.php ${project.basedir}/../release.json" dir="${project.basedir}" passthru="true" />
 
-		<delete file="${dirs.root}/release.json" quiet="yes" />
+		<delete file="${dirs.root}/release.json" quiet="true" />
 	</target>
 	
 	<target name="ftpdeploy" depends="git">
@@ -235,20 +232,4 @@
 		</ftpdeploy>
 	</target>
 	
-	<target name="docsdeploy" >
-		<echo>Uploading YubiKey Authentication Plugins User Guide</echo>
-		<ftpdeploy
-			host="${ftp.host}"
-			port="${ftp.port}"
-			username="${ftp.username}"
-			password="${ftp.password}"
-			dir="${ftp.dir.docs}/yubikey"
-			mode="${ftp.mode}"
-			passive="true"
-			level="debug">
-			<fileset dir="${dirs.documentation}">
-				<include name="*.xml"/>
-			</fileset>			
-		</ftpdeploy>
-	</target>
 </project>

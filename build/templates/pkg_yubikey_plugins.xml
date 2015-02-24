@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<extension type="package" version="3.2">
+    <name>Akeeba Two Factor Authentication Plugins for YubiKey and U2F</name>
+    <author>Akeeba Ltd</author>
+    <creationDate>##DATE##</creationDate>
+    <packagename>yubikey_plugins</packagename>
+    <version>##VERSION##</version>
+    <url>https://www.akeebabackup.com</url>
+    <packager>Akeeba Ltd</packager>
+    <packagerurl>https://www.akeebabackup.com</packagerurl>
+    <description>Additional Two Factor Authentication plugins for YubiKey and U2F</description>
+    <update>http://cdn.akeebabackup.com/update</update>
+    <!-- Reference: https://docs.joomla.org/Package -->
+    <files folder="packages">
+        <file type="plugin" id="u2f" group="twofactorauth">plg_twofactorauth_u2f-##VERSION##.zip</file>
+        <file type="plugin" id="yubikeyplus" group="twofactorauth">plg_twofactorauth_yubikeyplus-##VERSION##.zip</file>
+        <file type="plugin" id="yubikeytotp" group="twofactorauth">plg_twofactorauth_yubikeytotp-##VERSION##.zip</file>
+    </files>
+</extension>

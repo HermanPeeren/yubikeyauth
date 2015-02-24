@@ -1,3 +1,10 @@
+Version 2.0.0
+--------------------------------------------------------------------------------
+~ These plugins now only work with Joomla! 3.2.1 and later.
++ U2F support in the U2F plugin. Works with YubiKey NEO, YubiKey U2F and third party U2F devices.
++ The YubiKeyPlus plugin allows you to assign more than one YubiKeys per account.
++ The YubiKeyTOTP plugin allows you to use either a YubiKey or Google Authenticator for Two Factor Authentication of the same user account.
+
 Version 1.0.0
 --------------------------------------------------------------------------------
 + First public release
