@@ -58,9 +58,9 @@ As long as you used a U2F device previously added in your user account the log i
 
 ## What if I am locked out?
 
+Normally, after you have set up Two Factor Authentication, there are up to ten Emergency One Time Passwords generated for you. Note them down and keep them in a safe place. If you inadvertently lock yourself out of your site due to Two Factor Authentication failure you can enter one of these one time passwords in the Secret Key field of the login form. This will log you in to your site, allowing you to disable Two Factor Authentication. The emergency one time password you have used is immediately "burned" and you can no longer use it.
 
-
-If you inadvertently lock yourself out of your site due to Two Factor Authentication 
+If you have ran out of emergency passwords, or you do not have access to them, you need to perform a manual procedure for disabling Two Factor Authentication on your site. Connect to your site via FTP, SFTP or your hosting account's file manager. Go inside the `plugins` folder of your site. Find the `twofactorauth` folder and go inside it. Find the `u2f` folder and rename it to `u2f.bak`. You can now log in to your site without using Two Factor Authentication. Edit your user account and set the Two Factor Authentication to None. Click on Save & Close. Now rename the `u2f.bak` folder back to `u2f`. You can now try re-enabling the Two Factor Authentication for your user account.
 
 ## Advanced setup
 
