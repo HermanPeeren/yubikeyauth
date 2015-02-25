@@ -8,8 +8,8 @@
     <url>https://www.akeebabackup.com</url>
     <packager>Akeeba Ltd</packager>
     <packagerurl>https://www.akeebabackup.com</packagerurl>
-    <description>Additional Two Factor Authentication plugins for YubiKey and U2F</description>
-    <update>http://cdn.akeebabackup.com/update</update>
+    <description>Additional Two Factor Authentication plugins for YubiKey and U2F. Documentation: https://github.com/akeeba/yubikeyauth/blob/master/documentation/index.md</description>
+    <update>http://cdn.akeebabackup.com/updates/yubikey.xml</update>
     <!-- Reference: https://docs.joomla.org/Package -->
     <files folder="packages">
         <file type="plugin" id="u2f" group="twofactorauth">plg_twofactorauth_u2f-##VERSION##.zip</file>
