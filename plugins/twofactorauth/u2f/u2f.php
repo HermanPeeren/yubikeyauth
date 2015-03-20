@@ -19,7 +19,7 @@ class PlgTwofactorauthU2f extends JPlugin
 {
 	protected $methodName = 'u2f';
 
-	/** @var  LibU2F\U2F|null  U2F server instance */
+	/** @var  u2flib_server\U2F|null  U2F server instance */
 	protected $u2f = null;
 
 	protected $enabled = false;
@@ -49,7 +49,7 @@ class PlgTwofactorauthU2f extends JPlugin
 			include_once JPATH_LIBRARIES . '/fof/include.php';
 		}
 
-		if (!class_exists('LibU2F\\U2F'))
+		if (!class_exists('u2flib_server\\U2F'))
 		{
 			require_once __DIR__ . '/lib/U2F.php';
 		}
@@ -57,12 +57,19 @@ class PlgTwofactorauthU2f extends JPlugin
 		$jURI = JURI::getInstance();
 		$appId = $jURI->toString(array('scheme', 'host', 'port'));
 
-		$this->u2f = new LibU2F\U2F($appId);
+		try
+		{
+			$this->u2f = new u2flib_server\U2F($appId);
+		}
+		catch (\Exception $e)
+		{
+			return;
+		}
 
 		// Debug mode: turn off security and sanity checks
 		if (self::$developerModeTurnsOffSecurityAndSanityChecks)
 		{
-			\LibU2F\U2F::$ignoreSecurityForDebugging = true;
+			\u2flib_server\U2F::$ignoreSecurityForDebugging = true;
 		}
 
 		// Load the translation files
@@ -79,6 +86,11 @@ class PlgTwofactorauthU2f extends JPlugin
 	 */
 	public function onUserTwofactorIdentify()
 	{
+		if (is_null($this->u2f))
+		{
+			return false;
+		}
+
 		if (!defined('FOF_INCLUDED'))
 		{
 			return false;
@@ -184,6 +196,11 @@ class PlgTwofactorauthU2f extends JPlugin
 	 */
 	public function onUserTwofactorApplyConfiguration($method)
 	{
+		if (is_null($this->u2f))
+		{
+			return false;
+		}
+
 		if (!defined('FOF_INCLUDED'))
 		{
 			return false;
@@ -277,7 +294,7 @@ class PlgTwofactorauthU2f extends JPlugin
 			{
 				$registration = $this->u2f->doRegister($registrationRequest[0], $registerResponse);
 			}
-			catch (\LibU2F\Error $err)
+			catch (\u2flib_server\Error $err)
 			{
 				$app = JFactory::getApplication();
 				$app->enqueueMessage($err->getMessage(), 'error');
@@ -326,6 +343,11 @@ class PlgTwofactorauthU2f extends JPlugin
 	 */
 	public function onUserTwofactorAuthenticate($credentials, $options)
 	{
+		if (is_null($this->u2f))
+		{
+			return false;
+		}
+
 		if (!defined('FOF_INCLUDED'))
 		{
 			return false;
