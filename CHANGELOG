@@ -1,3 +1,7 @@
+Version 2.0.1
+--------------------------------------------------------------------------------
+~ Updated U2F library. It now works with OpenSSL 1.0.0 or later (instead of 1.0.1 or later)
+
 Version 2.0.0
 --------------------------------------------------------------------------------
 ~ These plugins now only work with Joomla! 3.2.1 and later.
