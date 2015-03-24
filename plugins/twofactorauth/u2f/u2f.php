@@ -146,6 +146,11 @@ class PlgTwofactorauthU2f extends JPlugin
 			return false;
 		}
 
+		if (is_null($this->u2f))
+		{
+			return false;
+		}
+
 		$u2fKeys = $this->getKeysFor($user_id);
 
 		// Is this a new TOTP setup? If so, we'll have to show the code
