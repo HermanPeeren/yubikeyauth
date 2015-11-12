@@ -321,6 +321,12 @@ class PlgTwofactorauthYubikeytotp extends JPlugin
 			return false;
 		}
 
+		if (!isset($otpConfig->config['yubikeytotp']))
+		{
+			// Whoops! The user has not configure any YubiKeys yet. We have to let them in.
+			return false;
+		}
+
 		// Get the list of valid YubiKeys
 		$yubikey_valid = $otpConfig->config['yubikeytotp'];
 
