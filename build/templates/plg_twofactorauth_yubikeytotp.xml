@@ -3,7 +3,7 @@
 	<name>PLG_TWOFACTORAUTH_YUBIKEYTOTP</name>
 	<author>Akeeba Ltd</author>
 	<creationDate>##DATE##</creationDate>
-	<copyright>Copyright (C) 2013-2015 Akeeba Ltd. All rights reserved.</copyright>
+	<copyright>Copyright (C) 2013-2016 Akeeba Ltd. All rights reserved.</copyright>
 	<license>GNU General Public License version 3 or later; see LICENSE.txt</license>
 	<authorEmail>nicholas@akeebabackup.com</authorEmail>
 	<authorUrl>www.akeebabackup.com</authorUrl>

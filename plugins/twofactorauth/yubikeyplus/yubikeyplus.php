@@ -3,7 +3,7 @@
  * @package     YubikeyAuthPlugins
  * @subpackage  Twofactorauth.yubikey
  *
- * @copyright   Copyright (C) 2013-2015 Akeeba Ltd. All rights reserved.
+ * @copyright   Copyright (C) 2013-2016 Akeeba Ltd. All rights reserved.
  * @license     GNU General Public License version 3 or later; see LICENSE.txt
  */
 
